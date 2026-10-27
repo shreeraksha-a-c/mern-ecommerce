@@ -27,6 +27,15 @@ const productSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		vendor: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+		stock: {
+			type: Number,
+			min: 0,
+			default: 0,
+		},
 	},
 	{ timestamps: true }
 );

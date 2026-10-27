@@ -35,6 +35,15 @@ const orderSchema = new mongoose.Schema(
 			type: String,
 			unique: true,
 		},
+		// needed later for refunds
+		paymentIntentId: {
+			type: String,
+		},
+		status: {
+			type: String,
+			enum: ["processing", "shipped", "delivered", "cancelled", "refunded"],
+			default: "processing",
+		},
 	},
 	{ timestamps: true }
 );

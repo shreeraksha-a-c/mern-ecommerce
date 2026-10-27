@@ -31,9 +31,20 @@ const userSchema = new mongoose.Schema(
 				},
 			},
 		],
+		wishlist: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Product",
+			},
+		],
+		// the coupon code the customer currently has applied at checkout, if any
+		appliedCouponCode: {
+			type: String,
+			default: null,
+		},
 		role: {
 			type: String,
-			enum: ["customer", "admin"],
+			enum: ["customer", "admin", "vendor"],
 			default: "customer",
 		},
 	},

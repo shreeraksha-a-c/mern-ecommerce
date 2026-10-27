@@ -21,11 +21,13 @@ const couponSchema = new mongoose.Schema(
 			type: Boolean,
 			default: true,
 		},
+		// null/undefined userId = a general coupon any customer can apply.
+		// NOTE: this schema used to require + unique-index userId, which meant only
+		// one coupon could ever exist per user. That unique index still exists in
+		// Atlas until you drop it manually (see the note I'm sending with this batch).
 		userId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
-			required: true,
-			unique: true,
 		},
 	},
 	{
