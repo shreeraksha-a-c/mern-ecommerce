@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { Tag, X } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
 
 const GiftCouponCard = () => {
@@ -25,71 +25,57 @@ const GiftCouponCard = () => {
 	};
 
 	return (
-		<motion.div
-			className='space-y-4 rounded-lg border border-gray-700 bg-gray-800 p-4 shadow-sm sm:p-6'
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.5, delay: 0.2 }}
-		>
-			<div className='space-y-4'>
-				<div>
-					<label htmlFor='voucher' className='mb-2 block text-sm font-medium text-gray-300'>
-						Do you have a voucher or gift card?
-					</label>
+		<div className='card space-y-4 p-5'>
+			<div>
+				<label htmlFor='voucher' className='label'>
+					Voucher or gift card
+				</label>
+				<div className='flex gap-2'>
 					<input
 						type='text'
 						id='voucher'
-						className='block w-full rounded-lg border border-gray-600 bg-gray-700 
-            p-2.5 text-sm text-white placeholder-gray-400 focus:border-emerald-500 
-            focus:ring-emerald-500'
-						placeholder='Enter code here'
+						className='input uppercase placeholder:normal-case'
+						placeholder='Enter code'
 						value={userInputCode}
 						onChange={(e) => setUserInputCode(e.target.value)}
 						required
 					/>
+					<button type='button' className='btn-secondary shrink-0' onClick={handleApplyCoupon}>
+						Apply
+					</button>
 				</div>
-
-				<motion.button
-					type='button'
-					className='flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300'
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={handleApplyCoupon}
-				>
-					Apply Code
-				</motion.button>
 			</div>
+
 			{isCouponApplied && coupon && (
-				<div className='mt-4'>
-					<h3 className='text-lg font-medium text-gray-300'>Applied Coupon</h3>
-
-					<p className='mt-2 text-sm text-gray-400'>
-						{coupon.code} - {coupon.discountPercentage}% off
+				<div className='flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2'>
+					<p className='flex items-center gap-2 text-sm text-green-800'>
+						<Tag size={16} />
+						<span>
+							<span className='font-mono font-semibold'>{coupon.code}</span> applied ({coupon.discountPercentage}%
+							off)
+						</span>
 					</p>
-
-					<motion.button
+					<button
 						type='button'
-						className='mt-2 flex w-full items-center justify-center rounded-lg bg-red-600 
-            px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 focus:outline-none
-             focus:ring-4 focus:ring-red-300'
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}
 						onClick={handleRemoveCoupon}
+						className='rounded p-1 text-green-800 hover:bg-green-100'
+						aria-label='Remove coupon'
 					>
-						Remove Coupon
-					</motion.button>
+						<X size={16} />
+					</button>
 				</div>
 			)}
 
-			{coupon && (
-				<div className='mt-4'>
-					<h3 className='text-lg font-medium text-gray-300'>Your Available Coupon:</h3>
-					<p className='mt-2 text-sm text-gray-400'>
-						{coupon.code} - {coupon.discountPercentage}% off
-					</p>
-				</div>
+			{coupon && !isCouponApplied && (
+				<p className='flex items-center gap-2 text-sm text-gray-600'>
+					<Tag size={16} className='text-brand-600' />
+					<span>
+						You have a coupon: <span className='font-mono font-semibold text-gray-900'>{coupon.code}</span> (
+						{coupon.discountPercentage}% off)
+					</span>
+				</p>
 			)}
-		</motion.div>
+		</div>
 	);
 };
 export default GiftCouponCard;

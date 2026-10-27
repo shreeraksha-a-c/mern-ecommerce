@@ -1,102 +1,85 @@
-import { motion } from "framer-motion";
-import { Trash, Star } from "lucide-react";
+import { Trash2, Star } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
+import { getCategoryName } from "../lib/categories";
 
 const ProductsList = () => {
 	const { deleteProduct, toggleFeaturedProduct, products } = useProductStore();
 
-	console.log("products", products);
-
 	return (
-		<motion.div
-			className='bg-gray-800 shadow-lg rounded-lg overflow-hidden max-w-4xl mx-auto'
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.8 }}
-		>
-			<table className=' min-w-full divide-y divide-gray-700'>
-				<thead className='bg-gray-700'>
-					<tr>
-						<th
-							scope='col'
-							className='px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider'
-						>
-							Product
-						</th>
-						<th
-							scope='col'
-							className='px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider'
-						>
-							Price
-						</th>
-						<th
-							scope='col'
-							className='px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider'
-						>
-							Category
-						</th>
+		<div className='card overflow-hidden'>
+			<div className='flex items-center justify-between border-b border-gray-200 px-5 py-4'>
+				<h2 className='text-lg font-semibold text-gray-900'>All products</h2>
+				<span className='text-sm text-gray-500'>{products?.length ?? 0} total</span>
+			</div>
 
-						<th
-							scope='col'
-							className='px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider'
-						>
-							Featured
-						</th>
-						<th
-							scope='col'
-							className='px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider'
-						>
-							Actions
-						</th>
-					</tr>
-				</thead>
+			<div className='overflow-x-auto'>
+				<table className='min-w-full divide-y divide-gray-200 text-sm'>
+					<thead className='bg-gray-50'>
+						<tr>
+							{["Product", "Price", "Category", "Featured", "Actions"].map((heading) => (
+								<th
+									key={heading}
+									scope='col'
+									className='px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500'
+								>
+									{heading}
+								</th>
+							))}
+						</tr>
+					</thead>
 
-				<tbody className='bg-gray-800 divide-y divide-gray-700'>
-					{products?.map((product) => (
-						<tr key={product._id} className='hover:bg-gray-700'>
-							<td className='px-6 py-4 whitespace-nowrap'>
-								<div className='flex items-center'>
-									<div className='flex-shrink-0 h-10 w-10'>
+					<tbody className='divide-y divide-gray-100 bg-white'>
+						{products?.map((product) => (
+							<tr key={product._id} className='hover:bg-gray-50'>
+								<td className='whitespace-nowrap px-5 py-3'>
+									<div className='flex items-center gap-3'>
 										<img
-											className='h-10 w-10 rounded-full object-cover'
+											className='h-11 w-11 rounded-lg border border-gray-200 object-cover'
 											src={product.image}
 											alt={product.name}
 										/>
+										<span className='font-medium text-gray-900'>{product.name}</span>
 									</div>
-									<div className='ml-4'>
-										<div className='text-sm font-medium text-white'>{product.name}</div>
-									</div>
-								</div>
-							</td>
-							<td className='px-6 py-4 whitespace-nowrap'>
-								<div className='text-sm text-gray-300'>${product.price.toFixed(2)}</div>
-							</td>
-							<td className='px-6 py-4 whitespace-nowrap'>
-								<div className='text-sm text-gray-300'>{product.category}</div>
-							</td>
-							<td className='px-6 py-4 whitespace-nowrap'>
-								<button
-									onClick={() => toggleFeaturedProduct(product._id)}
-									className={`p-1 rounded-full ${
-										product.isFeatured ? "bg-yellow-400 text-gray-900" : "bg-gray-600 text-gray-300"
-									} hover:bg-yellow-500 transition-colors duration-200`}
-								>
-									<Star className='h-5 w-5' />
-								</button>
-							</td>
-							<td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-								<button
-									onClick={() => deleteProduct(product._id)}
-									className='text-red-400 hover:text-red-300'
-								>
-									<Trash className='h-5 w-5' />
-								</button>
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</motion.div>
+								</td>
+								<td className='whitespace-nowrap px-5 py-3 text-gray-700'>${product.price.toFixed(2)}</td>
+								<td className='whitespace-nowrap px-5 py-3'>
+									<span className='rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700'>
+										{getCategoryName(product.category)}
+									</span>
+								</td>
+								<td className='whitespace-nowrap px-5 py-3'>
+									<button
+										onClick={() => toggleFeaturedProduct(product._id)}
+										className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
+											product.isFeatured
+												? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+												: "bg-gray-100 text-gray-600 hover:bg-gray-200"
+										}`}
+										aria-pressed={product.isFeatured}
+									>
+										<Star className={`h-3.5 w-3.5 ${product.isFeatured ? "fill-current" : ""}`} />
+										{product.isFeatured ? "Featured" : "Not featured"}
+									</button>
+								</td>
+								<td className='whitespace-nowrap px-5 py-3'>
+									<button
+										onClick={() => deleteProduct(product._id)}
+										className='rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600'
+										aria-label={`Delete ${product.name}`}
+									>
+										<Trash2 className='h-4 w-4' />
+									</button>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			{products?.length === 0 && (
+				<p className='px-5 py-12 text-center text-sm text-gray-500'>No products yet. Create your first one.</p>
+			)}
+		</div>
 	);
 };
 export default ProductsList;

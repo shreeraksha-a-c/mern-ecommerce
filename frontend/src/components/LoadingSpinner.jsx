@@ -1,11 +1,8 @@
-const LoadingSpinner = () => {
+const LoadingSpinner = ({ fullScreen = true }) => {
 	return (
-		<div className='flex items-center justify-center min-h-screen bg-gray-900'>
-			<div className='relative'>
-				<div className='w-20 h-20 border-emerald-200 border-2 rounded-full' />
-				<div className='w-20 h-20 border-emerald-500 border-t-2 animate-spin rounded-full absolute left-0 top-0' />
-				<div className='sr-only'>Loading</div>
-			</div>
+		<div className={`flex items-center justify-center ${fullScreen ? "min-h-screen bg-gray-50" : "py-16"}`}>
+			<div className='h-10 w-10 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600' />
+			<span className='sr-only'>Loading</span>
 		</div>
 	);
 };

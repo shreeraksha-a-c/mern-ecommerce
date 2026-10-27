@@ -1,41 +1,30 @@
-import { XCircle, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { XCircle, ArrowLeft, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const PurchaseCancelPage = () => {
 	return (
-		<div className='min-h-screen flex items-center justify-center px-4'>
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5 }}
-				className='max-w-md w-full bg-gray-800 rounded-lg shadow-xl overflow-hidden relative z-10'
-			>
-				<div className='p-6 sm:p-8'>
-					<div className='flex justify-center'>
-						<XCircle className='text-red-500 w-16 h-16 mb-4' />
-					</div>
-					<h1 className='text-2xl sm:text-3xl font-bold text-center text-red-500 mb-2'>Purchase Cancelled</h1>
-					<p className='text-gray-300 text-center mb-6'>
-						Your order has been cancelled. No charges have been made.
-					</p>
-					<div className='bg-gray-700 rounded-lg p-4 mb-6'>
-						<p className='text-sm text-gray-400 text-center'>
-							If you encountered any issues during the checkout process, please don&apos;t hesitate to
-							contact our support team.
-						</p>
-					</div>
-					<div className='space-y-4'>
-						<Link
-							to={"/"}
-							className='w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center'
-						>
-							<ArrowLeft className='mr-2' size={18} />
-							Return to Shop
-						</Link>
-					</div>
+		<div className='mx-auto max-w-lg px-4 py-16'>
+			<div className='card p-8 text-center'>
+				<span className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50'>
+					<XCircle className='h-9 w-9 text-red-600' />
+				</span>
+				<h1 className='mt-5 text-2xl font-bold tracking-tight text-gray-900'>Checkout cancelled</h1>
+				<p className='mt-2 text-gray-600'>Your order was cancelled and no charges have been made.</p>
+				<p className='mt-6 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600'>
+					Your items are still in your cart whenever you are ready.
+				</p>
+
+				<div className='mt-8 flex flex-col gap-3 sm:flex-row'>
+					<Link to='/cart' className='btn-primary flex-1 py-3'>
+						<ShoppingCart size={18} />
+						Back to cart
+					</Link>
+					<Link to='/' className='btn-secondary flex-1 py-3'>
+						<ArrowLeft size={18} />
+						Return to shop
+					</Link>
 				</div>
-			</motion.div>
+			</div>
 		</div>
 	);
 };

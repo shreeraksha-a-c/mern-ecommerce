@@ -1,6 +1,5 @@
 import { BarChart, PlusCircle, ShoppingBasket } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 import AnalyticsTab from "../components/AnalyticsTab";
 import CreateProductForm from "../components/CreateProductForm";
@@ -22,36 +21,36 @@ const AdminPage = () => {
 	}, [fetchAllProducts]);
 
 	return (
-		<div className='min-h-screen relative overflow-hidden'>
-			<div className='relative z-10 container mx-auto px-4 py-16'>
-				<motion.h1
-					className='text-4xl font-bold mb-8 text-emerald-400 text-center'
-					initial={{ opacity: 0, y: -20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.8 }}
-				>
-					Admin Dashboard
-				</motion.h1>
+		<div className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
+			<div>
+				<h1 className='text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl'>Admin dashboard</h1>
+				<p className='mt-1 text-sm text-gray-600'>Manage your catalogue and track store performance.</p>
+			</div>
 
-				<div className='flex justify-center mb-8'>
+			<div className='mt-8 grid gap-8 lg:grid-cols-[220px_1fr]'>
+				<nav className='flex gap-2 overflow-x-auto lg:flex-col' aria-label='Dashboard sections'>
 					{tabs.map((tab) => (
 						<button
 							key={tab.id}
 							onClick={() => setActiveTab(tab.id)}
-							className={`flex items-center px-4 py-2 mx-2 rounded-md transition-colors duration-200 ${
+							className={`flex shrink-0 items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
 								activeTab === tab.id
-									? "bg-emerald-600 text-white"
-									: "bg-gray-700 text-gray-300 hover:bg-gray-600"
+									? "bg-brand-600 text-white shadow-sm"
+									: "text-gray-700 hover:bg-white hover:shadow-sm"
 							}`}
+							aria-current={activeTab === tab.id ? "page" : undefined}
 						>
-							<tab.icon className='mr-2 h-5 w-5' />
+							<tab.icon className='h-5 w-5' />
 							{tab.label}
 						</button>
 					))}
+				</nav>
+
+				<div className='min-w-0'>
+					{activeTab === "create" && <CreateProductForm />}
+					{activeTab === "products" && <ProductsList />}
+					{activeTab === "analytics" && <AnalyticsTab />}
 				</div>
-				{activeTab === "create" && <CreateProductForm />}
-				{activeTab === "products" && <ProductsList />}
-				{activeTab === "analytics" && <AnalyticsTab />}
 			</div>
 		</div>
 	);

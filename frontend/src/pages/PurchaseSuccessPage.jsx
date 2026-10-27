@@ -1,21 +1,24 @@
-import { ArrowRight, CheckCircle, HandHeart } from "lucide-react";
+import { ArrowRight, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../stores/useCartStore";
 import axios from "../lib/axios";
 import Confetti from "react-confetti";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const PurchaseSuccessPage = () => {
 	const [isProcessing, setIsProcessing] = useState(true);
 	const { clearCart } = useCartStore();
 	const [error, setError] = useState(null);
+	const [orderId, setOrderId] = useState(null);
 
 	useEffect(() => {
 		const handleCheckoutSuccess = async (sessionId) => {
 			try {
-				await axios.post("/payments/checkout-success", {
+				const res = await axios.post("/payments/checkout-success", {
 					sessionId,
 				});
+				setOrderId(res.data?.orderId ?? null);
 				clearCart();
 			} catch (error) {
 				console.log(error);
@@ -33,12 +36,25 @@ const PurchaseSuccessPage = () => {
 		}
 	}, [clearCart]);
 
-	if (isProcessing) return "Processing...";
+	if (isProcessing) return <LoadingSpinner fullScreen={false} />;
 
-	if (error) return `Error: ${error}`;
+	if (error) {
+		return (
+			<div className='mx-auto max-w-md px-4 py-16'>
+				<div className='card p-8 text-center'>
+					<AlertTriangle className='mx-auto h-12 w-12 text-amber-500' />
+					<h1 className='mt-4 text-xl font-bold text-gray-900'>Something went wrong</h1>
+					<p className='mt-2 text-sm text-gray-600'>{error}</p>
+					<Link to='/' className='btn-primary mt-6'>
+						Back to shop
+					</Link>
+				</div>
+			</div>
+		);
+	}
 
 	return (
-		<div className='h-screen flex items-center justify-center px-4'>
+		<div className='mx-auto max-w-lg px-4 py-16'>
 			<Confetti
 				width={window.innerWidth}
 				height={window.innerHeight}
@@ -48,50 +64,30 @@ const PurchaseSuccessPage = () => {
 				recycle={false}
 			/>
 
-			<div className='max-w-md w-full bg-gray-800 rounded-lg shadow-xl overflow-hidden relative z-10'>
-				<div className='p-6 sm:p-8'>
-					<div className='flex justify-center'>
-						<CheckCircle className='text-emerald-400 w-16 h-16 mb-4' />
-					</div>
-					<h1 className='text-2xl sm:text-3xl font-bold text-center text-emerald-400 mb-2'>
-						Purchase Successful!
-					</h1>
+			<div className='card p-8 text-center'>
+				<span className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-50'>
+					<CheckCircle2 className='h-9 w-9 text-green-600' />
+				</span>
+				<h1 className='mt-5 text-2xl font-bold tracking-tight text-gray-900'>Thank you for your order!</h1>
+				<p className='mt-2 text-gray-600'>Your payment was successful and {"we're"} processing your order now.</p>
 
-					<p className='text-gray-300 text-center mb-2'>
-						Thank you for your order. {"We're"} processing it now.
-					</p>
-					<p className='text-emerald-400 text-center text-sm mb-6'>
-						Check your email for order details and updates.
-					</p>
-					<div className='bg-gray-700 rounded-lg p-4 mb-6'>
-						<div className='flex items-center justify-between mb-2'>
-							<span className='text-sm text-gray-400'>Order number</span>
-							<span className='text-sm font-semibold text-emerald-400'>#12345</span>
+				<dl className='mt-6 divide-y divide-gray-200 rounded-lg border border-gray-200 bg-gray-50 text-left text-sm'>
+					{orderId && (
+						<div className='flex items-center justify-between gap-4 px-4 py-3'>
+							<dt className='text-gray-600'>Order number</dt>
+							<dd className='truncate font-mono font-semibold text-gray-900'>#{orderId}</dd>
 						</div>
-						<div className='flex items-center justify-between'>
-							<span className='text-sm text-gray-400'>Estimated delivery</span>
-							<span className='text-sm font-semibold text-emerald-400'>3-5 business days</span>
-						</div>
+					)}
+					<div className='flex items-center justify-between gap-4 px-4 py-3'>
+						<dt className='text-gray-600'>Estimated delivery</dt>
+						<dd className='font-semibold text-gray-900'>3-5 business days</dd>
 					</div>
+				</dl>
 
-					<div className='space-y-4'>
-						<button
-							className='w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4
-             rounded-lg transition duration-300 flex items-center justify-center'
-						>
-							<HandHeart className='mr-2' size={18} />
-							Thanks for trusting us!
-						</button>
-						<Link
-							to={"/"}
-							className='w-full bg-gray-700 hover:bg-gray-600 text-emerald-400 font-bold py-2 px-4 
-            rounded-lg transition duration-300 flex items-center justify-center'
-						>
-							Continue Shopping
-							<ArrowRight className='ml-2' size={18} />
-						</Link>
-					</div>
-				</div>
+				<Link to='/' className='btn-primary mt-8 w-full py-3'>
+					Continue shopping
+					<ArrowRight size={18} />
+				</Link>
 			</div>
 		</div>
 	);

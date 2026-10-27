@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { useCartStore } from "../stores/useCartStore";
-import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import CartItem from "../components/CartItem";
 import PeopleAlsoBought from "../components/PeopleAlsoBought";
@@ -9,62 +8,51 @@ import GiftCouponCard from "../components/GiftCouponCard";
 
 const CartPage = () => {
 	const { cart } = useCartStore();
+	const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
 	return (
-		<div className='py-8 md:py-16'>
-			<div className='mx-auto max-w-screen-xl px-4 2xl:px-0'>
-				<div className='mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8'>
-					<motion.div
-						className='mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl'
-						initial={{ opacity: 0, x: -20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.5, delay: 0.2 }}
-					>
-						{cart.length === 0 ? (
-							<EmptyCartUI />
-						) : (
-							<div className='space-y-6'>
-								{cart.map((item) => (
-									<CartItem key={item._id} item={item} />
-								))}
-							</div>
-						)}
-						{cart.length > 0 && <PeopleAlsoBought />}
-					</motion.div>
+		<div className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
+			<h1 className='text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl'>Shopping cart</h1>
 
-					{cart.length > 0 && (
-						<motion.div
-							className='mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full'
-							initial={{ opacity: 0, x: 20 }}
-							animate={{ opacity: 1, x: 0 }}
-							transition={{ duration: 0.5, delay: 0.4 }}
-						>
+			{cart.length === 0 ? (
+				<EmptyCartUI />
+			) : (
+				<>
+					<div className='mt-6 grid gap-8 lg:grid-cols-[1fr_380px] lg:items-start'>
+						<section className='card divide-y divide-gray-200'>
+							<div className='flex items-center justify-between px-5 py-4'>
+								<p className='text-sm font-medium text-gray-700'>
+									{itemCount} {itemCount === 1 ? "item" : "items"}
+								</p>
+								<p className='hidden text-sm font-medium text-gray-500 sm:block'>Price</p>
+							</div>
+							{cart.map((item) => (
+								<CartItem key={item._id} item={item} />
+							))}
+						</section>
+
+						<aside className='space-y-4 lg:sticky lg:top-44'>
 							<OrderSummary />
 							<GiftCouponCard />
-						</motion.div>
-					)}
-				</div>
-			</div>
+						</aside>
+					</div>
+					<PeopleAlsoBought />
+				</>
+			)}
 		</div>
 	);
 };
 export default CartPage;
 
 const EmptyCartUI = () => (
-	<motion.div
-		className='flex flex-col items-center justify-center space-y-4 py-16'
-		initial={{ opacity: 0, y: 20 }}
-		animate={{ opacity: 1, y: 0 }}
-		transition={{ duration: 0.5 }}
-	>
-		<ShoppingCart className='h-24 w-24 text-gray-300' />
-		<h3 className='text-2xl font-semibold '>Your cart is empty</h3>
-		<p className='text-gray-400'>Looks like you {"haven't"} added anything to your cart yet.</p>
-		<Link
-			className='mt-4 rounded-md bg-emerald-500 px-6 py-2 text-white transition-colors hover:bg-emerald-600'
-			to='/'
-		>
-			Start Shopping
+	<div className='card mt-6 flex flex-col items-center px-6 py-20 text-center'>
+		<span className='flex h-20 w-20 items-center justify-center rounded-full bg-brand-50'>
+			<ShoppingCart className='h-10 w-10 text-brand-600' />
+		</span>
+		<h2 className='mt-6 text-xl font-semibold text-gray-900'>Your cart is empty</h2>
+		<p className='mt-2 text-gray-600'>Looks like you {"haven't"} added anything to your cart yet.</p>
+		<Link className='btn-primary mt-8 px-6' to='/'>
+			Start shopping
 		</Link>
-	</motion.div>
+	</div>
 );

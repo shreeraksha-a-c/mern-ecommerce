@@ -1,89 +1,170 @@
-import { ShoppingCart, UserPlus, LogIn, LogOut, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ShoppingCart, LogIn, LogOut, LayoutDashboard, Search, ShoppingBag, UserRound } from "lucide-react";
+import { Link, NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
 import { useCartStore } from "../stores/useCartStore";
+import { categories } from "../lib/categories";
+
+const SearchBar = ({ className = "" }) => {
+	const navigate = useNavigate();
+	const location = useLocation();
+	const [searchParams] = useSearchParams();
+	const [query, setQuery] = useState("");
+
+	// Keep the box in sync with the URL when landing on /search directly
+	useEffect(() => {
+		setQuery(location.pathname === "/search" ? searchParams.get("q") ?? "" : "");
+	}, [location.pathname, searchParams]);
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		const trimmed = query.trim();
+		if (!trimmed) return;
+		navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+	};
+
+	return (
+		<form onSubmit={handleSubmit} className={`relative ${className}`} role='search'>
+			<label htmlFor='site-search' className='sr-only'>
+				Search products
+			</label>
+			<input
+				id='site-search'
+				type='search'
+				value={query}
+				onChange={(e) => setQuery(e.target.value)}
+				placeholder='Search for jeans, shoes, bags...'
+				className='w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-4 pr-12 text-sm text-gray-900 placeholder-gray-500 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20'
+			/>
+			<button
+				type='submit'
+				className='absolute inset-y-1 right-1 flex items-center rounded-md bg-brand-600 px-3 text-white hover:bg-brand-700'
+				aria-label='Search'
+			>
+				<Search size={18} />
+			</button>
+		</form>
+	);
+};
 
 const Navbar = () => {
 	const { user, logout } = useUserStore();
 	const isAdmin = user?.role === "admin";
 	const { cart } = useCartStore();
+	const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
 	return (
-		<header className='fixed top-0 left-0 w-full bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-40 transition-all duration-300 border-b border-emerald-800'>
-			<div className='container mx-auto px-4 py-3'>
-				<div className='flex flex-wrap justify-between items-center'>
-					<Link to='/' className='text-2xl font-bold text-emerald-400 items-center space-x-2 flex'>
-						E-Commerce
+		<header className='sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur'>
+			<div className='bg-gray-900 text-center text-xs font-medium text-gray-100 py-2 px-4'>
+				Spend $200 or more and get a 10% off coupon for your next order
+			</div>
+
+			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+				<div className='flex h-16 items-center gap-4 lg:gap-8'>
+					<Link to='/' className='flex shrink-0 items-center gap-2 text-xl font-extrabold tracking-tight'>
+						<span className='flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white'>
+							<ShoppingBag size={20} />
+						</span>
+						<span>
+							Shop<span className='text-brand-600'>Hub</span>
+						</span>
 					</Link>
 
-					<nav className='flex flex-wrap items-center gap-4'>
-						<Link
-							to={"/"}
-							className='text-gray-300 hover:text-emerald-400 transition duration-300
-					 ease-in-out'
-						>
-							Home
-						</Link>
-						{user && (
-							<Link
-								to={"/cart"}
-								className='relative group text-gray-300 hover:text-emerald-400 transition duration-300 
-							ease-in-out'
-							>
-								<ShoppingCart className='inline-block mr-1 group-hover:text-emerald-400' size={20} />
-								<span className='hidden sm:inline'>Cart</span>
-								{cart.length > 0 && (
-									<span
-										className='absolute -top-2 -left-2 bg-emerald-500 text-white rounded-full px-2 py-0.5 
-									text-xs group-hover:bg-emerald-400 transition duration-300 ease-in-out'
-									>
-										{cart.length}
-									</span>
-								)}
-							</Link>
-						)}
+					<SearchBar className='hidden flex-1 md:block' />
+
+					<nav className='ml-auto flex items-center gap-1 sm:gap-2'>
 						{isAdmin && (
 							<Link
-								className='bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded-md font-medium
-								 transition duration-300 ease-in-out flex items-center'
-								to={"/secret-dashboard"}
+								to='/secret-dashboard'
+								className='flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100'
 							>
-								<Lock className='inline-block mr-1' size={18} />
-								<span className='hidden sm:inline'>Dashboard</span>
+								<LayoutDashboard size={20} />
+								<span className='hidden lg:inline'>Dashboard</span>
 							</Link>
 						)}
 
 						{user ? (
-							<button
-								className='bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 
-						rounded-md flex items-center transition duration-300 ease-in-out'
-								onClick={logout}
-							>
-								<LogOut size={18} />
-								<span className='hidden sm:inline ml-2'>Log Out</span>
-							</button>
+							<>
+								<div className='hidden items-center gap-2 px-3 text-sm text-gray-600 lg:flex'>
+									<UserRound size={20} />
+									<span className='max-w-[10rem] truncate'>Hi, {user.name?.split(" ")[0]}</span>
+								</div>
+								<button
+									onClick={logout}
+									className='flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100'
+								>
+									<LogOut size={20} />
+									<span className='hidden sm:inline'>Log out</span>
+								</button>
+							</>
 						) : (
 							<>
 								<Link
-									to={"/signup"}
-									className='bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 
-									rounded-md flex items-center transition duration-300 ease-in-out'
+									to='/login'
+									className='flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100'
 								>
-									<UserPlus className='mr-2' size={18} />
-									Sign Up
+									<LogIn size={20} />
+									<span className='hidden sm:inline'>Log in</span>
 								</Link>
-								<Link
-									to={"/login"}
-									className='bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 
-									rounded-md flex items-center transition duration-300 ease-in-out'
-								>
-									<LogIn className='mr-2' size={18} />
-									Login
+								<Link to='/signup' className='btn-primary hidden sm:inline-flex'>
+									Sign up
 								</Link>
 							</>
 						)}
+
+						{user && (
+							<Link
+								to='/cart'
+								className='relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100'
+							>
+								<ShoppingCart size={22} />
+								<span className='hidden sm:inline'>Cart</span>
+								{cartCount > 0 && (
+									<span className='absolute left-6 top-0.5 min-w-[1.25rem] rounded-full bg-brand-600 px-1.5 text-center text-[11px] font-bold leading-5 text-white'>
+										{cartCount}
+									</span>
+								)}
+							</Link>
+						)}
 					</nav>
 				</div>
+
+				<div className='pb-3 md:hidden'>
+					<SearchBar />
+				</div>
+			</div>
+
+			<div className='border-t border-gray-100'>
+				<nav className='mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 sm:px-6 lg:px-8'>
+					<NavLink
+						to='/'
+						end
+						className={({ isActive }) =>
+							`whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+								isActive
+									? "border-brand-600 text-brand-700"
+									: "border-transparent text-gray-600 hover:text-gray-900"
+							}`
+						}
+					>
+						All
+					</NavLink>
+					{categories.map((category) => (
+						<NavLink
+							key={category.slug}
+							to={`/category/${category.slug}`}
+							className={({ isActive }) =>
+								`whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+									isActive
+										? "border-brand-600 text-brand-700"
+										: "border-transparent text-gray-600 hover:text-gray-900"
+								}`
+							}
+						>
+							{category.name}
+						</NavLink>
+					))}
+				</nav>
 			</div>
 		</header>
 	);

@@ -1,8 +1,10 @@
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../lib/axios";
 import { Users, Package, ShoppingCart, DollarSign } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import LoadingSpinner from "./LoadingSpinner";
+
+const CHART_COLOR = "#4f46e5"; // brand-600, validated against the white surface
 
 const AnalyticsTab = () => {
 	const [analyticsData, setAnalyticsData] = useState({
@@ -31,91 +33,109 @@ const AnalyticsTab = () => {
 	}, []);
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <LoadingSpinner fullScreen={false} />;
 	}
 
 	return (
-		<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+		<div className='space-y-6'>
+			<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+				<AnalyticsCard title='Total users' value={analyticsData.users.toLocaleString()} icon={Users} />
+				<AnalyticsCard title='Total products' value={analyticsData.products.toLocaleString()} icon={Package} />
+				<AnalyticsCard title='Total sales' value={analyticsData.totalSales.toLocaleString()} icon={ShoppingCart} />
 				<AnalyticsCard
-					title='Total Users'
-					value={analyticsData.users.toLocaleString()}
-					icon={Users}
-					color='from-emerald-500 to-teal-700'
-				/>
-				<AnalyticsCard
-					title='Total Products'
-					value={analyticsData.products.toLocaleString()}
-					icon={Package}
-					color='from-emerald-500 to-green-700'
-				/>
-				<AnalyticsCard
-					title='Total Sales'
-					value={analyticsData.totalSales.toLocaleString()}
-					icon={ShoppingCart}
-					color='from-emerald-500 to-cyan-700'
-				/>
-				<AnalyticsCard
-					title='Total Revenue'
+					title='Total revenue'
 					value={`$${analyticsData.totalRevenue.toLocaleString()}`}
 					icon={DollarSign}
-					color='from-emerald-500 to-lime-700'
 				/>
 			</div>
-			<motion.div
-				className='bg-gray-800/60 rounded-lg p-6 shadow-lg'
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.5, delay: 0.25 }}
-			>
-				<ResponsiveContainer width='100%' height={400}>
-					<LineChart data={dailySalesData}>
-						<CartesianGrid strokeDasharray='3 3' />
-						<XAxis dataKey='name' stroke='#D1D5DB' />
-						<YAxis yAxisId='left' stroke='#D1D5DB' />
-						<YAxis yAxisId='right' orientation='right' stroke='#D1D5DB' />
-						<Tooltip />
-						<Legend />
-						<Line
-							yAxisId='left'
-							type='monotone'
-							dataKey='sales'
-							stroke='#10B981'
-							activeDot={{ r: 8 }}
-							name='Sales'
-						/>
-						<Line
-							yAxisId='right'
-							type='monotone'
-							dataKey='revenue'
-							stroke='#3B82F6'
-							activeDot={{ r: 8 }}
-							name='Revenue'
-						/>
-					</LineChart>
-				</ResponsiveContainer>
-			</motion.div>
+
+			{/* Sales and revenue have different scales, so each gets its own chart rather than a dual axis */}
+			<div className='grid gap-6 xl:grid-cols-2'>
+				<TrendChart title='Daily sales' subtitle='Orders per day, last 7 days' data={dailySalesData} dataKey='sales' />
+				<TrendChart
+					title='Daily revenue'
+					subtitle='Revenue per day, last 7 days'
+					data={dailySalesData}
+					dataKey='revenue'
+					formatValue={(value) => `$${Number(value).toLocaleString()}`}
+				/>
+			</div>
+
+			<details className='card p-5 text-sm'>
+				<summary className='cursor-pointer font-medium text-gray-700'>View daily data as a table</summary>
+				<table className='mt-4 min-w-full text-left'>
+					<thead className='text-xs uppercase tracking-wider text-gray-500'>
+						<tr>
+							<th className='py-2 pr-4 font-semibold'>Date</th>
+							<th className='py-2 pr-4 text-right font-semibold'>Sales</th>
+							<th className='py-2 text-right font-semibold'>Revenue</th>
+						</tr>
+					</thead>
+					<tbody className='divide-y divide-gray-100 tabular-nums text-gray-700'>
+						{dailySalesData.map((day) => (
+							<tr key={day.name}>
+								<td className='py-2 pr-4'>{day.name}</td>
+								<td className='py-2 pr-4 text-right'>{day.sales.toLocaleString()}</td>
+								<td className='py-2 text-right'>${day.revenue.toLocaleString()}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</details>
 		</div>
 	);
 };
 export default AnalyticsTab;
 
-const AnalyticsCard = ({ title, value, icon: Icon, color }) => (
-	<motion.div
-		className={`bg-gray-800 rounded-lg p-6 shadow-lg overflow-hidden relative ${color}`}
-		initial={{ opacity: 0, y: 20 }}
-		animate={{ opacity: 1, y: 0 }}
-		transition={{ duration: 0.5 }}
-	>
-		<div className='flex justify-between items-center'>
-			<div className='z-10'>
-				<p className='text-emerald-300 text-sm mb-1 font-semibold'>{title}</p>
-				<h3 className='text-white text-3xl font-bold'>{value}</h3>
-			</div>
+const AnalyticsCard = ({ title, value, icon: Icon }) => (
+	<div className='card flex items-center justify-between p-5'>
+		<div>
+			<p className='text-sm font-medium text-gray-600'>{title}</p>
+			<p className='mt-1 text-2xl font-bold tabular-nums text-gray-900'>{value}</p>
 		</div>
-		<div className='absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-900 opacity-30' />
-		<div className='absolute -bottom-4 -right-4 text-emerald-800 opacity-50'>
-			<Icon className='h-32 w-32' />
+		<span className='flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-600'>
+			<Icon className='h-5 w-5' />
+		</span>
+	</div>
+);
+
+const TrendChart = ({ title, subtitle, data, dataKey, formatValue = (value) => Number(value).toLocaleString() }) => (
+	<div className='card p-5'>
+		<h3 className='font-semibold text-gray-900'>{title}</h3>
+		<p className='text-sm text-gray-500'>{subtitle}</p>
+		<div className='mt-4 h-64'>
+			<ResponsiveContainer width='100%' height='100%'>
+				<LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+					<CartesianGrid stroke='#f3f4f6' vertical={false} />
+					<XAxis
+						dataKey='name'
+						tick={{ fill: "#6b7280", fontSize: 12 }}
+						tickLine={false}
+						axisLine={{ stroke: "#e5e7eb" }}
+					/>
+					<YAxis
+						tick={{ fill: "#6b7280", fontSize: 12 }}
+						tickLine={false}
+						axisLine={false}
+						width={56}
+						tickFormatter={formatValue}
+						allowDecimals={false}
+					/>
+					<Tooltip
+						formatter={(value) => [formatValue(value), title.replace("Daily ", "")]}
+						cursor={{ stroke: "#d1d5db", strokeDasharray: "4 4" }}
+						contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
+					/>
+					<Line
+						type='monotone'
+						dataKey={dataKey}
+						stroke={CHART_COLOR}
+						strokeWidth={2}
+						dot={{ r: 4, fill: CHART_COLOR, stroke: "#fff", strokeWidth: 2 }}
+						activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+					/>
+				</LineChart>
+			</ResponsiveContainer>
 		</div>
-	</motion.div>
+	</div>
 );

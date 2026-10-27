@@ -14,7 +14,7 @@ const PeopleAlsoBought = () => {
 				const res = await axios.get("/products/recommendations");
 				setRecommendations(res.data);
 			} catch (error) {
-				toast.error(error.response.data.message || "An error occurred while fetching recommendations");
+				toast.error(error.response?.data?.message || "An error occurred while fetching recommendations");
 			} finally {
 				setIsLoading(false);
 			}
@@ -23,17 +23,18 @@ const PeopleAlsoBought = () => {
 		fetchRecommendations();
 	}, []);
 
-	if (isLoading) return <LoadingSpinner />;
+	if (isLoading) return <LoadingSpinner fullScreen={false} />;
+	if (recommendations.length === 0) return null;
 
 	return (
-		<div className='mt-8'>
-			<h3 className='text-2xl font-semibold text-emerald-400'>People also bought</h3>
-			<div className='mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg: grid-col-3'>
+		<section className='mt-14'>
+			<h2 className='text-xl font-bold tracking-tight text-gray-900'>People also bought</h2>
+			<div className='mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4'>
 				{recommendations.map((product) => (
 					<ProductCard key={product._id} product={product} />
 				))}
 			</div>
-		</div>
+		</section>
 	);
 };
 export default PeopleAlsoBought;
