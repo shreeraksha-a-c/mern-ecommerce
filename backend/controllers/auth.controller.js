@@ -142,3 +142,43 @@ export const getProfile = async (req, res) => {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
+// DELETE /api/auth/account  (customer or admin, deletes their own account)
+export const deleteAccount = async (req, res) => {
+	try {
+		await User.findByIdAndDelete(req.user._id);
+		await redis.del(`refresh_token:${req.user._id}`);
+
+		res.clearCookie("accessToken");
+		res.clearCookie("refreshToken");
+		res.json({ message: "Account deleted" });
+	} catch (error) {
+		console.log("Error in deleteAccount controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+export const vendorSignup = async (req, res) => {
+	const { email, password, name } = req.body;
+	try {
+		const userExists = await User.findOne({ email });
+		if (userExists) {
+			return res.status(400).json({ message: "User already exists" });
+		}
+		const user = await User.create({ name, email, password, role: "vendor" });
+
+		const { accessToken, refreshToken } = generateTokens(user._id);
+		await storeRefreshToken(user._id, refreshToken);
+		setCookies(res, accessToken, refreshToken);
+
+		res.status(201).json({
+			_id: user._id,
+			name: user.name,
+			email: user.email,
+			role: user.role,
+		});
+	} catch (error) {
+		console.log("Error in vendorSignup controller", error.message);
+		res.status(500).json({ message: error.message });
+	}
+};
