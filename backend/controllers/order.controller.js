@@ -1,10 +1,25 @@
 import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 import { stripe } from "../lib/stripe.js";
+import Product from "../models/product.model.js";
 
 // statuses an admin can set manually ("refunded" is only set by the refund flow)
 const ADMIN_STATUSES = ["processing", "shipped", "delivered", "cancelled"];
 const ALL_STATUSES = [...ADMIN_STATUSES, "refunded"];
+
+// refunds the Stripe payment (if there was one), puts the stock back, sets the final status
+const refundAndRestock = async (order, finalStatus) => {
+    if (order.paymentIntentId) {
+        await stripe.refunds.create({ payment_intent: order.paymentIntentId });
+    }
+    await Promise.all(
+        order.products.map((line) =>
+            Product.findByIdAndUpdate(line.product, { $inc: { stock: line.quantity } })
+        )
+    );
+    order.status = finalStatus;
+    await order.save();
+};
 
 // GET /api/orders/my  -> logged-in customer's order history
 export const getMyOrders = async (req, res) => {
@@ -97,13 +112,15 @@ export const updateOrderStatus = async (req, res) => {
 		if (!order) {
 			return res.status(404).json({ message: "Order not found" });
 		}
-		if (order.status === "refunded") {
-			return res.status(400).json({ message: "Refunded orders cannot be changed" });
+		if (order.status === "refunded" || order.status === "cancelled") {
+			return res.status(400).json({ message: `${order.status} orders cannot be changed` });
 		}
-
-		order.status = status;
-		await order.save();
-
+		if (status === "cancelled") {
+			await refundAndRestock(order, "cancelled"); // cancelling a paid order = refund + restock
+		} else {
+			order.status = status;
+			await order.save();
+		}
 		res.json(order);
 	} catch (error) {
 		console.log("Error in updateOrderStatus controller", error.message);
@@ -124,18 +141,13 @@ export const refundOrder = async (req, res) => {
 		if (!order) {
 			return res.status(404).json({ message: "Order not found" });
 		}
-		if (order.status === "refunded") {
-			return res.status(400).json({ message: "This order has already been refunded" });
+		if (order.status === "refunded" || order.status === "cancelled") {
+			return res.status(400).json({ message: `This order is already ${order.status}` });
 		}
 		if (!order.paymentIntentId) {
 			return res.status(400).json({ message: "No payment record found for this order" });
 		}
-
-		await stripe.refunds.create({ payment_intent: order.paymentIntentId });
-
-		order.status = "refunded";
-		await order.save();
-
+		await refundAndRestock(order, "refunded");
 		res.json({ message: "Order refunded", order });
 	} catch (error) {
 		console.log("Error in refundOrder controller", error.message);
