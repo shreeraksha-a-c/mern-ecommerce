@@ -3,6 +3,12 @@ import cloudinary from "../lib/cloudinary.js";
 import Product from "../models/product.model.js";
 import Order from "../models/order.model.js";
 
+// returns a non-negative whole number, or null when the value isn't one
+const parseStock = (value) => {
+	const n = Number(value);
+	return Number.isInteger(n) && n >= 0 ? n : null;
+};
+
 export const getAllProducts = async (req, res) => {
 	try {
 		const products = await Product.find({}); // find all products
@@ -42,7 +48,15 @@ export const getFeaturedProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
 	try {
-		const { name, description, price, image, category } = req.body;
+		const { name, description, price, image, category, stock } = req.body;
+
+		let stockValue = 0;
+		if (stock !== undefined) {
+			stockValue = parseStock(stock);
+			if (stockValue === null) {
+				return res.status(400).json({ message: "stock must be a non-negative whole number" });
+			}
+		}
 
 		let cloudinaryResponse = null;
 
@@ -56,6 +70,7 @@ export const createProduct = async (req, res) => {
 			price,
 			image: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "",
 			category,
+			stock: stockValue,
 		});
 
 		res.status(201).json(product);
@@ -167,7 +182,15 @@ export const updateProduct = async (req, res) => {
 			return res.status(404).json({ message: "Product not found" });
 		}
 
-		const { name, description, price, category, image } = req.body;
+		const { name, description, price, category, image, stock } = req.body;
+
+		if (stock !== undefined) {
+			const stockValue = parseStock(stock);
+			if (stockValue === null) {
+				return res.status(400).json({ message: "stock must be a non-negative whole number" });
+			}
+			product.stock = stockValue;
+		}
 
 		if (name !== undefined) product.name = name;
 		if (description !== undefined) product.description = description;
@@ -344,6 +367,14 @@ export const createVendorProduct = async (req, res) => {
 			return res.status(400).json({ message: "name, description, price, image and category are required" });
 		}
 
+		let stockValue = 0;
+		if (stock !== undefined) {
+			stockValue = parseStock(stock);
+			if (stockValue === null) {
+				return res.status(400).json({ message: "stock must be a non-negative whole number" });
+			}
+		}
+
 		const cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
 
 		const product = await Product.create({
@@ -353,6 +384,7 @@ export const createVendorProduct = async (req, res) => {
 			category,
 			image: cloudinaryResponse.secure_url,
 			vendor: req.user._id,
+			stock: stockValue,
 		});
 
 		res.status(201).json(product);
@@ -384,11 +416,19 @@ export const updateVendorProduct = async (req, res) => {
 			return res.status(403).json({ message: "You can only edit your own products" });
 		}
 
-		const { name, description, price, category } = req.body;
+		const { name, description, price, category, stock } = req.body;
 		if (name !== undefined) product.name = name;
 		if (description !== undefined) product.description = description;
 		if (category !== undefined) product.category = category;
 		if (price !== undefined) product.price = Number(price);
+
+		if (stock !== undefined) {
+			const stockValue = parseStock(stock);
+			if (stockValue === null) {
+				return res.status(400).json({ message: "stock must be a non-negative whole number" });
+			}
+			product.stock = stockValue;
+		}
 
 		await product.save();
 		res.json(product);
