@@ -3,6 +3,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Product from "../models/product.model.js";
 import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
+import mongoose from "mongoose";
 
 // returns a non-negative whole number, or null when the value isn't one
 const parseStock = (value) => {
@@ -482,6 +483,50 @@ export const deleteVendorProduct = async (req, res) => {
 		res.json({ message: "Product deleted" });
 	} catch (error) {
 		console.log("Error in deleteVendorProduct controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+// GET /api/products/:id  (public)
+export const getProductById = async (req, res) => {
+	try {
+		const { id } = req.params;
+		if (!mongoose.isValidObjectId(id)) {
+			return res.status(400).json({ message: "Invalid product id" });
+		}
+		const product = await Product.findById(id).populate("vendor", "name");
+		if (!product) {
+			return res.status(404).json({ message: "Product not found" });
+		}
+		res.json(product);
+	} catch (error) {
+		console.log("Error in getProductById controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+// GET /api/products/categories  (public)
+export const getCategories = async (req, res) => {
+	try {
+		const categories = await Product.distinct("category");
+		res.json(categories.sort());
+	} catch (error) {
+		console.log("Error in getCategories controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+// GET /api/products/low-stock?threshold=5  (vendor or admin) - vendors only see their own
+export const getLowStockProducts = async (req, res) => {
+	try {
+		const threshold = Math.max(parseInt(req.query.threshold) || 5, 0);
+		const filter = { stock: { $lte: threshold } };
+		if (req.user.role === "vendor") filter.vendor = req.user._id;
+
+		const products = await Product.find(filter).sort({ stock: 1 });
+		res.json(products);
+	} catch (error) {
+		console.log("Error in getLowStockProducts controller", error.message);
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
