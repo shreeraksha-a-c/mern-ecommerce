@@ -2,6 +2,7 @@ import { redis } from "../lib/redis.js";
 import cloudinary from "../lib/cloudinary.js";
 import Product from "../models/product.model.js";
 import Order from "../models/order.model.js";
+import User from "../models/user.model.js";
 
 // returns a non-negative whole number, or null when the value isn't one
 const parseStock = (value) => {
@@ -107,22 +108,51 @@ export const deleteProduct = async (req, res) => {
 	}
 };
 
+// GET /api/products/recommendations  (public; personalised when logged in)
 export const getRecommendedProducts = async (req, res) => {
 	try {
-		const products = await Product.aggregate([
-			{
-				$sample: { size: 4 },
-			},
-			{
-				$project: {
-					_id: 1,
-					name: 1,
-					description: 1,
-					image: 1,
-					price: 1,
-				},
-			},
-		]);
+		const SIZE = 4;
+		const projection = { _id: 1, name: 1, description: 1, image: 1, price: 1, category: 1, stock: 1 };
+		const categories = new Set();
+		const excludeIds = [];
+
+		if (req.user) {
+			const user = await User.findById(req.user._id).populate("wishlist", "category");
+			user.wishlist.forEach((p) => p?.category && categories.add(p.category));
+			user.cartItems.forEach((item) => excludeIds.push(item._id));
+
+			const orders = await Order.find({ user: req.user._id })
+				.sort({ createdAt: -1 })
+				.limit(20)
+				.populate("products.product", "category");
+			orders.forEach((order) =>
+				order.products.forEach((line) => {
+					if (!line.product) return; // product was deleted
+					categories.add(line.product.category);
+					excludeIds.push(line.product._id);
+				})
+			);
+		}
+
+		let products = [];
+		if (categories.size > 0) {
+			products = await Product.aggregate([
+				{ $match: { category: { $in: [...categories] }, _id: { $nin: excludeIds } } },
+				{ $sample: { size: SIZE } },
+				{ $project: projection },
+			]);
+		}
+
+		// not enough personalised picks -> top up with random products
+		if (products.length < SIZE) {
+			const alreadyPicked = [...excludeIds, ...products.map((p) => p._id)];
+			const filler = await Product.aggregate([
+				{ $match: { _id: { $nin: alreadyPicked } } },
+				{ $sample: { size: SIZE - products.length } },
+				{ $project: projection },
+			]);
+			products = [...products, ...filler];
+		}
 
 		res.json(products);
 	} catch (error) {

@@ -17,7 +17,7 @@ import {
 	updateStock,
 	updateVendorProduct,
 } from "../controllers/product.controller.js";
-import { adminRoute, protectRoute, vendorRoute } from "../middleware/auth.middleware.js";
+import { adminRoute, optionalAuth, protectRoute, vendorRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ router.get("/search", searchProducts);
 router.get("/bestsellers", getBestsellers);
 router.get("/trending", getTrending);
 router.get("/category/:category", getProductsByCategory);
-router.get("/recommendations", getRecommendedProducts);
+router.get("/recommendations", optionalAuth, getRecommendedProducts);
 // vendor routes - must stay above "/:id" routes
 router.post("/vendor", protectRoute, vendorRoute, createVendorProduct);
 router.get("/vendor/mine", protectRoute, vendorRoute, getMyVendorProducts);

@@ -47,3 +47,17 @@ export const vendorRoute = (req, res, next) => {
 		return res.status(403).json({ message: "Access denied - Vendor only" });
 	}
 };
+
+// like protectRoute, but never rejects: sets req.user when a valid token is present
+export const optionalAuth = async (req, res, next) => {
+    try {
+        const accessToken = req.cookies.accessToken;
+        if (accessToken) {
+            const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            req.user = await User.findById(decoded.userId).select("-password");
+        }
+    } catch (error) {
+        // expired / invalid token -> treat as a guest
+    }
+    next();
+};
