@@ -154,3 +154,28 @@ export const refundOrder = async (req, res) => {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
+// POST /api/orders/:id/cancel (customer)
+export const cancelMyOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid order id" });
+        }
+        const order = await Order.findById(id);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        if (order.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        if (order.status !== "processing") {
+            return res.status(400).json({ message: `Only processing orders can be cancelled` });
+        }
+        await refundAndRestock(order, "cancelled");
+        res.json({ message: "Order cancelled and refunded", order });
+    } catch (error) {
+        console.log("Error in cancelMyOrder controller", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
