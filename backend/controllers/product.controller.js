@@ -359,10 +359,9 @@ export const updateStock = async (req, res) => {
 	}
 };
 
-// POST /api/products/vendor  (vendor or admin) - vendor's own products only carry their id
 export const createVendorProduct = async (req, res) => {
 	try {
-		const { name, description, price, image, category } = req.body;
+		const { name, description, price, image, category, stock } = req.body;
 		if (!name || !description || price === undefined || !image || !category) {
 			return res.status(400).json({ message: "name, description, price, image and category are required" });
 		}
