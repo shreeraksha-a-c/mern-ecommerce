@@ -84,3 +84,26 @@ function getDatesInRange(startDate, endDate) {
 
 	return dates;
 }
+
+export const getExtraAnalytics = async () => {
+	const [ordersByStatus, salesByCategory, lowStock] = await Promise.all([
+		Order.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+		Order.aggregate([
+			{ $match: { status: { $nin: ["cancelled", "refunded"] } } },
+			{ $unwind: "$products" },
+			{ $lookup: { from: "products", localField: "products.product", foreignField: "_id", as: "product" } },
+			{ $unwind: "$product" },
+			{
+				$group: {
+					_id: "$product.category",
+					unitsSold: { $sum: "$products.quantity" },
+					revenue: { $sum: { $multiply: ["$products.price", "$products.quantity"] } },
+				},
+			},
+			{ $sort: { revenue: -1 } },
+		]),
+		Product.find({ stock: { $lte: 5 } }).select("name category stock image").sort({ stock: 1 }).limit(10),
+	]);
+
+	return { ordersByStatus, salesByCategory, lowStock };
+};
