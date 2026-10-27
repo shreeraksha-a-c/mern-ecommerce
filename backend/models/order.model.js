@@ -24,8 +24,21 @@ const orderSchema = new mongoose.Schema(
 					required: true,
 					min: 0,
 				},
+				vendor: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: "User",
+				},
 			},
 		],
+		shippingAddress: {
+			name: String,
+			line1: String,
+			line2: String,
+			city: String,
+			state: String,
+			postalCode: String,
+			country: String,
+		},
 		totalAmount: {
 			type: Number,
 			required: true,
