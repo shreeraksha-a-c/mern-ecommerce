@@ -182,3 +182,55 @@ export const vendorSignup = async (req, res) => {
 		res.status(500).json({ message: error.message });
 	}
 };
+
+// PUT /api/auth/profile  body: { name?, phone?, address? }
+export const updateProfile = async (req, res) => {
+	try {
+		const { name, phone, address } = req.body;
+		const user = req.user;
+
+		if (name !== undefined) {
+			if (!String(name).trim()) {
+				return res.status(400).json({ message: "Name cannot be empty" });
+			}
+			user.name = String(name).trim();
+		}
+		if (phone !== undefined) user.phone = String(phone).trim();
+		if (address !== undefined) {
+			const { line1, line2, city, state, postalCode, country } = address || {};
+			user.address = { line1, line2, city, state, postalCode, country };
+		}
+
+		await user.save();
+		res.json(user);
+	} catch (error) {
+		console.log("Error in updateProfile controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+// PUT /api/auth/change-password  body: { currentPassword, newPassword }
+export const changePassword = async (req, res) => {
+	try {
+		const { currentPassword, newPassword } = req.body;
+		if (!currentPassword || !newPassword) {
+			return res.status(400).json({ message: "currentPassword and newPassword are required" });
+		}
+		if (newPassword.length < 6) {
+			return res.status(400).json({ message: "New password must be at least 6 characters long" });
+		}
+
+		const user = await User.findById(req.user._id);
+		if (!(await user.comparePassword(currentPassword))) {
+			return res.status(400).json({ message: "Current password is incorrect" });
+		}
+
+		user.password = newPassword; // hashed by the pre-save hook
+		await user.save();
+
+		res.json({ message: "Password updated" });
+	} catch (error) {
+		console.log("Error in changePassword controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
