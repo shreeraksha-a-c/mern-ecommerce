@@ -1,13 +1,10 @@
+//import { loadStripe } from "@stripe/stripe-js";
 import { useCartStore } from "../stores/useCartStore";
 import { useCurrencyStore } from "../stores/useCurrencyStore";
 import { Link } from "react-router-dom";
 import { Lock, MoveRight } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
+import toast from "react-hot-toast";
 import axios from "../lib/axios";
-
-const stripePromise = loadStripe(
-	"pk_test_51KZYccCoOZF2UhtOwdXQl3vcizup20zqKqT9hVUIsVzsdBrhqbUI2fE0ZdEVLdZfeHjeyFXtqaNsyCJCmZWnjNZa00PzMAjlcL"
-);
 
 const OrderSummary = () => {
 	const { total, subtotal, coupon, isCouponApplied, cart } = useCartStore();
@@ -20,19 +17,19 @@ const OrderSummary = () => {
 	const amountToCoupon = 200 - total;
 
 	const handlePayment = async () => {
-		const stripe = await stripePromise;
-		const res = await axios.post("/payments/create-checkout-session", {
-			products: cart,
-			couponCode: coupon ? coupon.code : null,
-		});
+		try {
+			const res = await axios.post("/payments/create-checkout-session", {
+				products: cart,
+				couponCode: coupon ? coupon.code : null,
+			});
 
-		const session = res.data;
-		const result = await stripe.redirectToCheckout({
-			sessionId: session.id,
-		});
-
-		if (result.error) {
-			console.error("Error:", result.error);
+			if (!res.data?.url) throw new Error("No checkout URL returned");
+			window.location.href = res.data.url; // go straight to Stripe's page
+		} catch (error) {
+			console.error("Checkout error:", error);
+			toast.error(
+				error.response?.data?.message || error.response?.data?.error || error.message || "Checkout failed"
+			);
 		}
 	};
 
