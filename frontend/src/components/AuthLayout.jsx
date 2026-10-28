@@ -3,7 +3,7 @@ import { CheckCircle2 } from "lucide-react";
 const benefits = [
 	"Save items to your cart across devices",
 	"Secure checkout powered by Stripe",
-	"Earn a 10% coupon on orders over $200",
+	"Earn a 10% coupon on orders over ₹500",
 ];
 
 // Two-column auth screen: benefits panel on large screens, form card always

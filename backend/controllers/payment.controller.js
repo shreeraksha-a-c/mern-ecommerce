@@ -4,8 +4,13 @@ import Product from "../models/product.model.js";
 import { stripe } from "../lib/stripe.js";
 import User from "../models/user.model.js";
 
-// set CURRENCY=inr in .env to charge in rupees (default usd)
-const CURRENCY = (process.env.CURRENCY || "usd").toLowerCase();
+import {
+	BASE_CURRENCY,
+	SUPPORTED_CURRENCIES,
+	REWARD_THRESHOLD_INR,
+	isSupportedCurrency,
+	toMinorUnits,
+} from "../lib/currencies.js";
 
 // same "which coupons can this user use" rule as coupon.controller.js
 const findUsableCoupon = async (code, userId) => {
@@ -17,6 +22,92 @@ const findUsableCoupon = async (code, userId) => {
 };
 
 // POST /api/payments/create-checkout-session  body: { products, couponCode? }
+// export const createCheckoutSession = async (req, res) => {
+// 	try {
+// 		const { products, couponCode } = req.body;
+
+// 		if (!Array.isArray(products) || products.length === 0) {
+// 			return res.status(400).json({ error: "Invalid or empty products array" });
+// 		}
+
+// 		// Look every product up in the DB instead of trusting the price/name/image the
+// 		// client sent - otherwise anyone could edit the request and pay whatever they want.
+// 		const ids = products.map((p) => p._id || p.id);
+// 		const dbProducts = await Product.find({ _id: { $in: ids } });
+// 		const dbProductsById = new Map(dbProducts.map((p) => [p._id.toString(), p]));
+
+// 		let totalAmount = 0;
+// 		const orderProducts = []; // trusted {id, quantity, price} used for the order + Stripe metadata
+
+// 		for (const requested of products) {
+// 			const id = requested._id || requested.id;
+// 			const dbProduct = dbProductsById.get(String(id));
+// 			if (!dbProduct) {
+// 				return res.status(404).json({ message: `Product ${id} not found` });
+// 			}
+
+// 			const quantity = Math.max(1, parseInt(requested.quantity) || 1);
+// 			if (dbProduct.stock < quantity) {
+// 				return res.status(400).json({ message: `${dbProduct.name} only has ${dbProduct.stock} in stock` });
+// 			}
+
+// 			orderProducts.push({ id: dbProduct._id.toString(), quantity, price: dbProduct.price });
+// 			totalAmount += Math.round(dbProduct.price * 100) * quantity;
+// 		}
+
+// 		const lineItems = orderProducts.map((p) => {
+// 			const dbProduct = dbProductsById.get(p.id);
+// 			return {
+// 				price_data: {
+// 					currency: CURRENCY,
+// 					product_data: {
+// 						name: dbProduct.name,
+// 						images: [dbProduct.image],
+// 					},
+// 					unit_amount: Math.round(dbProduct.price * 100),
+// 				},
+// 				quantity: p.quantity,
+// 			};
+// 		});
+
+// 		let coupon = null;
+// 		if (couponCode) {
+// 			coupon = await findUsableCoupon(couponCode, req.user._id);
+// 			if (coupon && coupon.expirationDate < new Date()) coupon = null;
+// 			if (coupon) {
+// 				totalAmount -= Math.round((totalAmount * coupon.discountPercentage) / 100);
+// 			}
+// 		}
+
+// 		const session = await stripe.checkout.sessions.create({
+// 			payment_method_types: ["card"],
+// 			line_items: lineItems,
+// 			mode: "payment",
+// 			shipping_address_collection: { allowed_countries: ["IN", "US"] },
+// 			success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
+// 			cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+// 			discounts: coupon
+// 				? [
+// 						{
+// 							coupon: await createStripeCoupon(coupon.discountPercentage),
+// 						},
+// 				  ]
+// 				: [],
+// 			metadata: {
+// 				userId: req.user._id.toString(),
+// 				couponCode: coupon ? coupon.code : "",
+// 				products: JSON.stringify(orderProducts),
+// 			},
+// 		});
+
+// 		res.status(200).json({ id: session.id, url: session.url, totalAmount: totalAmount / 100 });
+// 	} catch (error) {
+// 		console.error("Error processing checkout:", error);
+// 		res.status(500).json({ message: "Error processing checkout", error: error.message });
+// 	}
+// };
+
+// POST /api/payments/create-checkout-session  body: { products, couponCode?, currency? }
 export const createCheckoutSession = async (req, res) => {
 	try {
 		const { products, couponCode } = req.body;
@@ -25,14 +116,22 @@ export const createCheckoutSession = async (req, res) => {
 			return res.status(400).json({ error: "Invalid or empty products array" });
 		}
 
-		// Look every product up in the DB instead of trusting the price/name/image the
-		// client sent - otherwise anyone could edit the request and pay whatever they want.
+		// currency chosen in the site header; falls back to INR
+		const currency = String(req.body.currency || BASE_CURRENCY).toUpperCase();
+		if (!isSupportedCurrency(currency)) {
+			return res
+				.status(400)
+				.json({ message: `Unsupported currency. Use one of: ${SUPPORTED_CURRENCIES.join(", ")}` });
+		}
+
+		// Look every product up in the DB instead of trusting the price the client sent
 		const ids = products.map((p) => p._id || p.id);
 		const dbProducts = await Product.find({ _id: { $in: ids } });
 		const dbProductsById = new Map(dbProducts.map((p) => [p._id.toString(), p]));
 
-		let totalAmount = 0;
-		const orderProducts = []; // trusted {id, quantity, price} used for the order + Stripe metadata
+		let baseTotal = 0; // INR, what we store on the order
+		let chargeTotal = 0; // smallest unit of the chosen currency, what Stripe charges
+		const orderProducts = []; // trusted {id, quantity, price(INR)}
 
 		for (const requested of products) {
 			const id = requested._id || requested.id;
@@ -47,19 +146,20 @@ export const createCheckoutSession = async (req, res) => {
 			}
 
 			orderProducts.push({ id: dbProduct._id.toString(), quantity, price: dbProduct.price });
-			totalAmount += Math.round(dbProduct.price * 100) * quantity;
+			baseTotal += dbProduct.price * quantity;
+			chargeTotal += toMinorUnits(dbProduct.price, currency) * quantity;
 		}
 
 		const lineItems = orderProducts.map((p) => {
 			const dbProduct = dbProductsById.get(p.id);
 			return {
 				price_data: {
-					currency: CURRENCY,
+					currency: currency.toLowerCase(),
 					product_data: {
 						name: dbProduct.name,
 						images: [dbProduct.image],
 					},
-					unit_amount: Math.round(dbProduct.price * 100),
+					unit_amount: toMinorUnits(dbProduct.price, currency),
 				},
 				quantity: p.quantity,
 			};
@@ -70,7 +170,8 @@ export const createCheckoutSession = async (req, res) => {
 			coupon = await findUsableCoupon(couponCode, req.user._id);
 			if (coupon && coupon.expirationDate < new Date()) coupon = null;
 			if (coupon) {
-				totalAmount -= Math.round((totalAmount * coupon.discountPercentage) / 100);
+				baseTotal -= (baseTotal * coupon.discountPercentage) / 100;
+				chargeTotal -= Math.round((chargeTotal * coupon.discountPercentage) / 100);
 			}
 		}
 
@@ -81,21 +182,17 @@ export const createCheckoutSession = async (req, res) => {
 			shipping_address_collection: { allowed_countries: ["IN", "US"] },
 			success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
-			discounts: coupon
-				? [
-						{
-							coupon: await createStripeCoupon(coupon.discountPercentage),
-						},
-				  ]
-				: [],
+			discounts: coupon ? [{ coupon: await createStripeCoupon(coupon.discountPercentage) }] : [],
 			metadata: {
 				userId: req.user._id.toString(),
 				couponCode: coupon ? coupon.code : "",
 				products: JSON.stringify(orderProducts),
+				currency, // e.g. "USD"
+				baseAmount: baseTotal.toFixed(2), // order total in INR after the coupon
 			},
 		});
 
-		res.status(200).json({ id: session.id, url: session.url, totalAmount: totalAmount / 100 });
+		res.status(200).json({ id: session.id, url: session.url, totalAmount: chargeTotal / 100, currency });
 	} catch (error) {
 		console.error("Error processing checkout:", error);
 		res.status(500).json({ message: "Error processing checkout", error: error.message });
@@ -124,7 +221,10 @@ async function createOrderFromSession(session) {
 				price: item.price,
 				vendor: productsById.get(item.id)?.vendor,
 			})),
-			totalAmount: session.amount_total / 100,
+			//totalAmount: session.amount_total / 100,
+			totalAmount: Number(session.metadata.baseAmount) || session.amount_total / 100, // INR
+			currency: (session.currency || "").toUpperCase(),
+			paidAmount: session.amount_total / 100,
 			stripeSessionId: session.id,
 			paymentIntentId: session.payment_intent,
 			shippingAddress: shipping
@@ -162,7 +262,11 @@ async function createOrderFromSession(session) {
 	}
 
 	// big orders earn a reward coupon, only after payment actually succeeded
-	if (session.amount_total >= 20000) {
+	//if (session.amount_total >= 20000) {
+		//await createNewCoupon(session.metadata.userId);
+	//}
+
+	if ((Number(session.metadata.baseAmount) || 0) >= REWARD_THRESHOLD_INR) {
 		await createNewCoupon(session.metadata.userId);
 	}
 

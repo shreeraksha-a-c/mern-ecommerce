@@ -450,7 +450,12 @@ export const updateVendorProduct = async (req, res) => {
 		if (name !== undefined) product.name = name;
 		if (description !== undefined) product.description = description;
 		if (category !== undefined) product.category = category;
-		if (price !== undefined) product.price = Number(price);
+		if (price !== undefined) {
+			if (Number.isNaN(Number(price)) || Number(price) < 0) {
+				return res.status(400).json({ message: "Price must be a non-negative number" });
+			}
+			product.price = Number(price);
+		}
 
 		if (stock !== undefined) {
 			const stockValue = parseStock(stock);
@@ -461,6 +466,7 @@ export const updateVendorProduct = async (req, res) => {
 		}
 
 		await product.save();
+		if (product.isFeatured) await updateFeaturedProductsCache(); // keep the homepage's cached featured list in sync
 		res.json(product);
 	} catch (error) {
 		console.log("Error in updateVendorProduct controller", error.message);

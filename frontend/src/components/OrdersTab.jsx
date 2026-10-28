@@ -163,9 +163,13 @@ const OrdersTab = () => {
 									{formatPrice(order.totalAmount)}
 								</td>
 								<td className='px-5 py-4 whitespace-nowrap'>
-									{order.status === "refunded" ? (
-										<span className='rounded-full bg-purple-100 px-2.5 py-1 text-xs font-semibold text-purple-800'>
-											Refunded
+									{order.status === "refunded" || order.status === "cancelled" ? (
+										<span
+											className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+												order.status === "refunded" ? "bg-purple-100 text-purple-800" : "bg-red-100 text-red-800"
+											}`}
+										>
+											{order.status === "refunded" ? "Refunded" : "Cancelled"}
 										</span>
 									) : (
 										<select
@@ -181,7 +185,7 @@ const OrdersTab = () => {
 									)}
 								</td>
 								<td className='px-5 py-4 whitespace-nowrap text-right'>
-									{order.status !== "refunded" && (
+									{order.status !== "refunded" && order.status !== "cancelled" && (
 										<button
 											onClick={() => handleRefund(order._id)}
 											className='inline-flex items-center gap-1 rounded border border-gray-200 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition'

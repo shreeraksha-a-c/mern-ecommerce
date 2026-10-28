@@ -16,9 +16,11 @@ import {
 	Calendar,
 	DollarSign,
 	Layers,
+	Pencil,
 } from "lucide-react";
 import { categories, getCategoryName } from "../lib/categories";
 import toast from "react-hot-toast";
+import EditProductModal from "../components/EditProductModal";
 
 const VendorPage = () => {
 	const { formatPrice } = useCurrencyStore();
@@ -26,6 +28,7 @@ const VendorPage = () => {
 		vendorProducts,
 		fetchVendorProducts,
 		createVendorProduct,
+		updateVendorProduct,
 		deleteVendorProduct,
 		updateStock,
 		lowStockProducts,
@@ -38,6 +41,7 @@ const VendorPage = () => {
 
 	const [activeTab, setActiveTab] = useState("products");
 	const [showAddModal, setShowAddModal] = useState(false);
+	const [editing, setEditing] = useState(null);
 
 	// Form State for New Vendor Product
 	const [newProduct, setNewProduct] = useState({
@@ -81,16 +85,6 @@ const VendorPage = () => {
 		if (success) {
 			setNewProduct({ name: "", description: "", price: "", category: "", stock: "10", image: "" });
 			setShowAddModal(false);
-			fetchLowStockProducts(5);
-		}
-	};
-
-	const handleRestock = async (productId, currentStock) => {
-		const addition = prompt("Enter additional units to add to stock:", "10");
-		if (addition && !isNaN(Number(addition)) && Number(addition) > 0) {
-			const newTotal = Number(currentStock) + Number(addition);
-			await updateStock(productId, newTotal);
-			fetchVendorProducts();
 			fetchLowStockProducts(5);
 		}
 	};
@@ -247,10 +241,11 @@ const VendorPage = () => {
 											</td>
 											<td className='px-6 py-4 text-right space-x-2'>
 												<button
-													onClick={() => handleRestock(p._id, p.stock)}
-													className='rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100'
+													onClick={() => setEditing(p)}
+													className='rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-emerald-700'
+													title='Edit price & stock'
 												>
-													Restock
+													<Pencil size={16} />
 												</button>
 												<button
 													onClick={() => {
@@ -381,10 +376,11 @@ const VendorPage = () => {
 											</div>
 										</div>
 										<button
-											onClick={() => handleRestock(p._id, p.stock)}
-											className='btn-primary text-xs py-2 px-4'
+											onClick={() => setEditing(p)}
+											className='rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-emerald-700'
+											title='Edit price & stock'
 										>
-											Restock Now
+											<Pencil size={18} />
 										</button>
 									</div>
 								))}
@@ -393,6 +389,18 @@ const VendorPage = () => {
 					</div>
 				)}
 			</div>
+			
+			{editing && (
+				<EditProductModal
+					product={editing}
+					onClose={() => setEditing(null)}
+					onSave={async (data) => {
+						const ok = await updateVendorProduct(editing._id, data);
+						if (ok) fetchLowStockProducts(5);
+						return ok;
+					}}
+				/>
+			)}
 
 			{/* Modal for Creating New Vendor Product */}
 			{showAddModal && (
@@ -435,7 +443,7 @@ const VendorPage = () => {
 
 							<div className='grid grid-cols-2 gap-4'>
 								<div>
-									<label className='label'>Price ($)</label>
+									<label className='label'>Price (₹)</label>
 									<input
 										type='number'
 										step='0.01'

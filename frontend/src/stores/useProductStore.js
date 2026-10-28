@@ -107,6 +107,23 @@ export const useProductStore = create((set) => ({
 		}
 	},
 
+		// Admin: edit price/stock of ANY product
+	updateProduct: async (productId, data) => {
+		try {
+			const res = await axios.put(`/products/${productId}`, data);
+			set((state) => ({
+				products: state.products.map((p) =>
+					p._id === productId ? { ...p, ...data, ...(res.data?._id ? res.data : {}) } : p
+				),
+			}));
+			toast.success("Product updated");
+			return true;
+		} catch (error) {
+			toast.error(error.response?.data?.message || error.response?.data?.error || "Failed to update product");
+			return false;
+		}
+	},
+
 	fetchFeaturedProducts: async () => {
 		set({ loading: true });
 		try {
@@ -170,7 +187,8 @@ export const useProductStore = create((set) => ({
 		try {
 			const res = await axios.put(`/products/vendor/${id}`, data);
 			set((state) => ({
-				vendorProducts: state.vendorProducts.map((p) => (p._id === id ? res.data : p)),
+				//vendorProducts: state.vendorProducts.map((p) => (p._id === id ? res.data : p)),
+				vendorProducts: state.vendorProducts.map((p) => (p._id === id ? { ...p, ...res.data } : p)),
 				loading: false,
 			}));
 			toast.success("Product updated successfully!");

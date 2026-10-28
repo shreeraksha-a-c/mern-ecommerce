@@ -8,19 +8,21 @@ import axios from "../lib/axios";
 
 const OrderSummary = () => {
 	const { total, subtotal, coupon, isCouponApplied, cart } = useCartStore();
-	const { formatPrice } = useCurrencyStore();
+	//const { formatPrice } = useCurrencyStore();
+	const { formatPrice, currentCurrency } = useCurrencyStore();
 
 	const savings = subtotal - total;
 	const formattedSubtotal = formatPrice(subtotal);
 	const formattedTotal = formatPrice(total);
 	const formattedSavings = formatPrice(savings);
-	const amountToCoupon = 200 - total;
+	const amountToCoupon = 500 - total; // INR, same as REWARD_THRESHOLD_INR on the backend
 
 	const handlePayment = async () => {
 		try {
 			const res = await axios.post("/payments/create-checkout-session", {
 				products: cart,
 				couponCode: coupon ? coupon.code : null,
+				currency: currentCurrency,
 			});
 
 			if (!res.data?.url) throw new Error("No checkout URL returned");
