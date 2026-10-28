@@ -102,8 +102,8 @@ const Navbar = () => {
 	const navDropdownRef = useRef(null);
 
 	useEffect(() => {
-		getWishlist();
-	}, [getWishlist]);
+	if (user) getWishlist();
+	}, [getWishlist, user]);
 
 	// Close menus on outside click
 	useEffect(() => {

@@ -16,8 +16,8 @@ const WishlistPage = () => {
 	const { formatPrice } = useCurrencyStore();
 
 	useEffect(() => {
-		getWishlist();
-	}, [getWishlist]);
+	if (user) getWishlist();
+	}, [getWishlist, user]);
 
 	const handleMoveToCart = (product) => {
 		if (product.stock !== undefined && product.stock === 0) {

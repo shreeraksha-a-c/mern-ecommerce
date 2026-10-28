@@ -142,24 +142,28 @@ axios.interceptors.response.use(
 	(response) => response,
 	async (error) => {
 		const originalRequest = error.config;
+
+		// if the refresh call itself failed, give up (otherwise it waits on itself forever)
+		if (originalRequest?.url?.includes("/auth/refresh-token")) {
+			return Promise.reject(error);
+		}
+
 		if (error.response?.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true;
 
 			try {
-				// If a refresh is already in progress, wait for it to complete
 				if (refreshPromise) {
 					await refreshPromise;
 					return axios(originalRequest);
 				}
 
-				// Start a new refresh process
 				refreshPromise = useUserStore.getState().refreshToken();
 				await refreshPromise;
 				refreshPromise = null;
 
 				return axios(originalRequest);
 			} catch (refreshError) {
-				// If refresh fails, redirect to login or handle as needed
+				refreshPromise = null;
 				useUserStore.getState().logout();
 				return Promise.reject(refreshError);
 			}
