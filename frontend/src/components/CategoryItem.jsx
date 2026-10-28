@@ -2,16 +2,20 @@ import { Link } from "react-router-dom";
 
 const CategoryItem = ({ category }) => {
 	return (
-		<Link to={`/category/${category.slug}`} className='group flex flex-col items-center gap-3 text-center'>
-			<div className='aspect-square w-full overflow-hidden rounded-2xl border border-gray-200 bg-white'>
-				<img
-					src={category.imageUrl}
-					alt={category.name}
-					className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
-					loading='lazy'
-				/>
-			</div>
-			<span className='text-sm font-semibold text-gray-800 group-hover:text-brand-600'>{category.name}</span>
+		<Link
+			to={`/category/${category.slug}`}
+			className='group relative block aspect-[3/4] overflow-hidden bg-gray-200'
+		>
+			<img
+				src={category.imageUrl}
+				alt={category.name}
+				className='h-full w-full object-cover transition-transform duration-700 group-hover:scale-105'
+				loading='lazy'
+			/>
+			<div className='absolute inset-0 bg-gradient-to-t from-gray-950/70 via-gray-950/10 to-transparent' />
+			<span className='absolute bottom-3 left-3 text-[11px] font-medium uppercase tracking-[0.25em] text-white'>
+				{category.name}
+			</span>
 		</Link>
 	);
 };

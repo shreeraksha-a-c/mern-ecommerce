@@ -21,7 +21,7 @@ const LoginPage = () => {
 			subtitle='Welcome back! Enter your details to continue.'
 			footer={
 				<>
-					New to ShopHub?{" "}
+					New to Wardrobe?{" "}
 					<Link to='/signup' className='font-semibold text-brand-600 hover:text-brand-700'>
 						Create an account
 					</Link>

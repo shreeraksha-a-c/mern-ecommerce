@@ -11,15 +11,15 @@ const AuthLayout = ({ title, subtitle, children, footer }) => {
 	return (
 		<div className='mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:py-16'>
 			<div className='card grid overflow-hidden lg:grid-cols-2'>
-				<div className='relative hidden bg-brand-700 p-10 text-white lg:block'>
-					<img src='/suits.jpg' alt='' className='absolute inset-0 h-full w-full object-cover opacity-20' />
+				<div className='relative hidden bg-gray-950 p-10 text-white lg:block'>
+					<img src='/suits.jpg' alt='' className='absolute inset-0 h-full w-full object-cover opacity-40' />
 					<div className='relative'>
-						<h2 className='text-3xl font-extrabold tracking-tight'>Welcome to ShopHub</h2>
-						<p className='mt-3 text-brand-100'>Everything you need for your wardrobe, in one place.</p>
+						<h2 className='text-3xl font-medium'>Welcome to Wardrobe</h2>
+						<p className='mt-3 text-gray-200'>Everything you need for your wardrobe, in one place.</p>
 						<ul className='mt-10 space-y-4'>
 							{benefits.map((benefit) => (
 								<li key={benefit} className='flex items-center gap-3'>
-									<CheckCircle2 className='h-5 w-5 shrink-0 text-brand-200' />
+									<CheckCircle2 className='h-5 w-5 shrink-0 text-gray-300' />
 									<span className='text-sm'>{benefit}</span>
 								</li>
 							))}

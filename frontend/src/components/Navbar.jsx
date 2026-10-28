@@ -5,7 +5,6 @@ import {
 	LogOut,
 	LayoutDashboard,
 	Search,
-	ShoppingBag,
 	UserRound,
 	Heart,
 	Package,
@@ -53,7 +52,7 @@ const SearchBar = ({ className = "" }) => {
 			/>
 			<button
 				type='submit'
-				className='absolute inset-y-1 right-1 flex items-center rounded-md bg-brand-600 px-3 text-white hover:bg-brand-700 transition'
+				className='absolute inset-y-1 right-1 flex items-center rounded-md bg-gray-900 px-3 text-white hover:bg-gray-800 transition'
 				aria-label='Search'
 			>
 				<Search size={18} />
@@ -154,13 +153,8 @@ const Navbar = () => {
 			<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
 				<div className='flex h-16 items-center gap-4 lg:gap-8'>
 					{/* Logo */}
-					<Link to='/' className='flex shrink-0 items-center gap-2 text-xl font-extrabold tracking-tight'>
-						<span className='flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm'>
-							<ShoppingBag size={20} />
-						</span>
-						<span>
-							Shop<span className='text-brand-600'>Hub</span>
-						</span>
+					<Link to='/' className='shrink-0 text-lg font-semibold uppercase tracking-[0.3em] text-gray-900'>
+						Wardrobe
 					</Link>
 
 					{/* Desktop Search Bar */}

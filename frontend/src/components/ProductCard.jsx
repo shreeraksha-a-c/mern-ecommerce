@@ -41,8 +41,8 @@ const ProductCard = ({ product }) => {
 	};
 
 	return (
-		<div className='group flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg'>
-			<Link to={`/product/${product._id}`} className='relative aspect-square overflow-hidden bg-gray-100 block'>
+		<div className='group flex h-full flex-col'>
+			<Link to={`/product/${product._id}`} className='relative block aspect-[3/4] overflow-hidden bg-gray-100'>
 				<img
 					className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
 					src={product.image}
@@ -51,7 +51,7 @@ const ProductCard = ({ product }) => {
 				/>
 
 				{product.isFeatured && (
-					<span className='absolute left-3 top-3 rounded-md bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-950 shadow-sm'>
+					<span className='absolute left-3 top-3 bg-white/90 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-gray-900'>
 						Featured
 					</span>
 				)}
@@ -77,22 +77,19 @@ const ProductCard = ({ product }) => {
 				</button>
 			</Link>
 
-			<div className='flex flex-1 flex-col p-4'>
+			<div className='flex flex-1 flex-col pt-3'>
 				{product.category && (
-					<p className='text-xs font-medium uppercase tracking-wide text-gray-500'>
+					<p className='text-[10px] font-medium uppercase tracking-[0.25em] text-gray-500'>
 						{getCategoryName(product.category)}
 					</p>
 				)}
 				<Link to={`/product/${product._id}`}>
-					<h3 className='mt-1 line-clamp-1 font-semibold text-gray-900 transition hover:text-brand-600'>
+					<h3 className='mt-1 line-clamp-1 text-sm font-medium text-gray-900 transition hover:text-brand-600'>
 						{product.name}
 					</h3>
 				</Link>
-				{product.description && (
-					<p className='mt-1 line-clamp-2 text-sm text-gray-600'>{product.description}</p>
-				)}
-				<div className='mt-auto flex items-center justify-between gap-3 pt-4'>
-					<p className='text-lg font-bold text-gray-900'>{formatPrice(product.price)}</p>
+				<div className='mt-auto flex items-center justify-between gap-3 pt-3'>
+					<p className='text-sm font-medium text-gray-900'>{formatPrice(product.price)}</p>
 					<button
 						className='btn-primary px-3 py-2 disabled:bg-gray-300 disabled:cursor-not-allowed'
 						onClick={handleAddToCart}

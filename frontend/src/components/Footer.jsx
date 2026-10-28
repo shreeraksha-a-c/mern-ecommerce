@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { ShoppingBag } from "lucide-react";
 import { categories } from "../lib/categories";
 
 const Footer = () => {
@@ -7,13 +6,8 @@ const Footer = () => {
 		<footer className='mt-16 border-t border-gray-200 bg-white'>
 			<div className='mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8'>
 				<div className='lg:col-span-2'>
-					<Link to='/' className='flex items-center gap-2 text-lg font-extrabold tracking-tight'>
-						<span className='flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white'>
-							<ShoppingBag size={18} />
-						</span>
-						<span>
-							Shop<span className='text-brand-600'>Hub</span>
-						</span>
+					<Link to='/' className='text-lg font-semibold uppercase tracking-[0.3em] text-gray-900'>
+						Wardrobe
 					</Link>
 					<p className='mt-4 max-w-sm text-sm text-gray-600'>
 						Everyday fashion in one place: jeans, shoes, jackets, bags and more, with secure checkout
@@ -56,7 +50,7 @@ const Footer = () => {
 				</div>
 			</div>
 			<div className='border-t border-gray-100 py-5 text-center text-xs text-gray-500'>
-				© {new Date().getFullYear()} ShopHub. All rights reserved.
+				© {new Date().getFullYear()} Wardrobe. All rights reserved.
 			</div>
 		</footer>
 	);

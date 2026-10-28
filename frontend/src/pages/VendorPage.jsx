@@ -92,7 +92,7 @@ const VendorPage = () => {
 	return (
 		<div className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
 			{/* Vendor Header */}
-			<div className='card bg-gradient-to-r from-emerald-700 to-teal-900 p-6 sm:p-8 text-white'>
+			<div className='card bg-gradient-to-r from-gray-800 to-gray-900 p-6 sm:p-8 text-white'>
 				<div className='flex flex-wrap items-center justify-between gap-6'>
 					<div className='flex items-center gap-4'>
 						<div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur text-white shadow-inner'>
@@ -103,13 +103,13 @@ const VendorPage = () => {
 								Vendor Portal
 							</span>
 							<h1 className='text-2xl font-extrabold sm:text-3xl mt-1'>Seller Management</h1>
-							<p className='text-sm text-teal-100'>Manage your inventory, fulfill orders, and monitor stock.</p>
+							<p className='text-sm text-gray-200'>Manage your inventory, fulfill orders, and monitor stock.</p>
 						</div>
 					</div>
 
 					<button
 						onClick={() => setShowAddModal(true)}
-						className='inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-emerald-800 shadow hover:bg-teal-50 transition'
+						className='inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow hover:bg-gray-50 transition'
 					>
 						<Plus size={18} />
 						Add New Product
@@ -120,24 +120,24 @@ const VendorPage = () => {
 				<div className='mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3'>
 					<div className='rounded-xl bg-white/10 p-4 backdrop-blur flex items-center justify-between'>
 						<div>
-							<p className='text-xs uppercase font-medium text-teal-200'>Listed Products</p>
+							<p className='text-xs uppercase font-medium text-gray-300'>Listed Products</p>
 							<p className='text-2xl font-bold mt-1'>{vendorProducts.length}</p>
 						</div>
-						<ShoppingBag className='text-teal-200 h-8 w-8 opacity-75' />
+						<ShoppingBag className='text-gray-300 h-8 w-8 opacity-75' />
 					</div>
 					<div className='rounded-xl bg-white/10 p-4 backdrop-blur flex items-center justify-between'>
 						<div>
-							<p className='text-xs uppercase font-medium text-teal-200'>Low Stock Alerts</p>
+							<p className='text-xs uppercase font-medium text-gray-300'>Low Stock Alerts</p>
 							<p className='text-2xl font-bold mt-1'>{lowStockProducts.length}</p>
 						</div>
 						<AlertTriangle className='text-amber-300 h-8 w-8 opacity-80' />
 					</div>
 					<div className='rounded-xl bg-white/10 p-4 backdrop-blur flex items-center justify-between'>
 						<div>
-							<p className='text-xs uppercase font-medium text-teal-200'>Orders to Fulfill</p>
+							<p className='text-xs uppercase font-medium text-gray-300'>Orders to Fulfill</p>
 							<p className='text-2xl font-bold mt-1'>{vendorOrders.length}</p>
 						</div>
-						<Truck className='text-teal-200 h-8 w-8 opacity-75' />
+						<Truck className='text-gray-300 h-8 w-8 opacity-75' />
 					</div>
 				</div>
 			</div>

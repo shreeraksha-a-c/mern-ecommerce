@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Gift, ShieldCheck, Sparkles, Flame, TrendingUp, Award } from "lucide-react";
+import { ArrowRight, Gift, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 import CategoryItem from "../components/CategoryItem";
 import { useProductStore } from "../stores/useProductStore";
 import FeaturedProducts from "../components/FeaturedProducts";
@@ -32,66 +32,73 @@ const HomePage = () => {
 		fetchBestsellers();
 	}, [fetchFeaturedProducts, fetchTrending, fetchBestsellers]);
 
+	const tabs = [
+		{ id: "featured", label: "Featured" },
+		{ id: "trending", label: "Trending" },
+		{ id: "bestsellers", label: "Bestsellers" },
+	];
+
+	const shownProducts =
+		displayTab === "trending"
+			? trending.length > 0
+				? trending
+				: products
+			: displayTab === "bestsellers"
+				? bestsellers.length > 0
+					? bestsellers
+					: products
+				: products;
+
 	return (
 		<div className='mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
-			{/* Hero Banner */}
-			<section className='grid overflow-hidden rounded-2xl bg-brand-700 text-white md:grid-cols-2 shadow-lg'>
-				<div className='flex flex-col justify-center p-8 sm:p-12'>
-					<span className='w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider'>
-						New season
-					</span>
-					<h1 className='mt-4 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl'>
+			{/* Hero Banner: full photo with text over a dark overlay */}
+			<section className='relative isolate overflow-hidden bg-gray-950 text-white'>
+				<img src='/jackets.jpg' alt='' className='absolute inset-0 -z-10 h-full w-full object-cover opacity-70' />
+				<div className='absolute inset-0 -z-10 bg-gradient-to-t from-gray-950/90 via-gray-950/40 to-gray-950/10' />
+				<div className='flex min-h-[420px] flex-col justify-end p-8 sm:p-12 lg:min-h-[500px]'>
+					<span className='text-[11px] font-medium uppercase tracking-[0.35em] text-gray-200'>New season</span>
+					<h1 className='mt-4 max-w-2xl text-4xl font-medium leading-tight sm:text-6xl'>
 						Style for every day, all in one place
 					</h1>
-					<p className='mt-4 max-w-md text-brand-100'>
+					<p className='mt-4 max-w-md text-sm text-gray-200 sm:text-base'>
 						Shop jeans, jackets, shoes, bags and more, and discover the latest trends in eco-friendly
 						fashion.
 					</p>
-					<div className='mt-8 flex flex-wrap gap-3'>
+					<div className='mt-8 flex flex-wrap items-center gap-8'>
 						<Link
 							to='/category/jackets'
-							className='inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-brand-700 shadow-sm hover:bg-brand-50 transition'
+							className='inline-flex items-center gap-2 border-b border-white pb-1 text-xs font-medium uppercase tracking-[0.25em] transition hover:border-gray-300 hover:text-gray-300'
 						>
-							Shop jackets <ArrowRight size={16} />
+							Shop jackets <ArrowRight size={14} />
 						</Link>
 						<a
 							href='#categories'
-							className='inline-flex items-center rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold hover:bg-white/10 transition'
+							className='text-xs font-medium uppercase tracking-[0.25em] text-gray-300 transition hover:text-white'
 						>
 							Browse categories
 						</a>
 					</div>
 				</div>
-				<div className='relative hidden min-h-[320px] md:block'>
-					<img src='/jackets.jpg' alt='' className='absolute inset-0 h-full w-full object-cover' />
-					<div className='absolute inset-0 bg-gradient-to-r from-brand-700 via-brand-700/20 to-transparent' />
-				</div>
 			</section>
 
-			{/* Store Perks */}
-			<section className='mt-6 grid gap-3 sm:grid-cols-3'>
+			{/* Store Perks: one thin strip under the hero */}
+			<section className='grid border-b border-gray-200 sm:grid-cols-3 sm:divide-x sm:divide-gray-200'>
 				{perks.map(({ icon: Icon, title, text }) => (
-					<div key={title} className='card flex items-center gap-4 p-4'>
-						<span className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600'>
-							<Icon size={22} />
-						</span>
+					<div key={title} className='flex items-center gap-4 px-2 py-6 sm:px-6'>
+						<Icon size={22} strokeWidth={1.5} className='shrink-0 text-gray-700' />
 						<div>
-							<p className='text-sm font-semibold text-gray-900'>{title}</p>
-							<p className='text-sm text-gray-600'>{text}</p>
+							<p className='text-[11px] font-medium uppercase tracking-[0.2em] text-gray-900'>{title}</p>
+							<p className='mt-1 text-sm text-gray-600'>{text}</p>
 						</div>
 					</div>
 				))}
 			</section>
 
 			{/* Category Grid */}
-			<section id='categories' className='mt-14 scroll-mt-24'>
-				<div className='flex items-end justify-between'>
-					<div>
-						<h2 className='text-2xl font-bold tracking-tight text-gray-900'>Shop by category</h2>
-						<p className='mt-1 text-sm text-gray-600'>Find exactly what you are looking for</p>
-					</div>
-				</div>
-				<div className='mt-5 grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-7'>
+			<section id='categories' className='mt-16 scroll-mt-24'>
+				<p className='eyebrow'>Categories</p>
+				<h2 className='mt-2 text-2xl font-medium text-gray-900 sm:text-3xl'>Shop by category</h2>
+				<div className='mt-6 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-7'>
 					{categories.map((category) => (
 						<CategoryItem category={category} key={category.slug} />
 					))}
@@ -99,74 +106,33 @@ const HomePage = () => {
 			</section>
 
 			{/* Product Showcases with Dynamic Tabs */}
-			<section className='mt-14'>
-				<div className='flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 pb-4'>
+			<section className='mt-16'>
+				<div className='flex flex-wrap items-end justify-between gap-4 border-b border-gray-200 pb-4'>
 					<div>
-						<h2 className='text-2xl font-bold tracking-tight text-gray-900'>Curated Collections</h2>
-						<p className='mt-1 text-sm text-gray-600'>Discover our hand-picked products and customer favorites</p>
+						<p className='eyebrow'>Collections</p>
+						<h2 className='mt-2 text-2xl font-medium text-gray-900 sm:text-3xl'>Curated collections</h2>
 					</div>
-
-					<div className='flex items-center gap-2'>
-						<button
-							onClick={() => setDisplayTab("featured")}
-							className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition ${
-								displayTab === "featured"
-									? "bg-brand-600 text-white shadow-sm"
-									: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-							}`}
-						>
-							<Sparkles size={16} />
-							Featured
-						</button>
-						<button
-							onClick={() => setDisplayTab("trending")}
-							className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition ${
-								displayTab === "trending"
-									? "bg-brand-600 text-white shadow-sm"
-									: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-							}`}
-						>
-							<Flame size={16} />
-							Trending
-						</button>
-						<button
-							onClick={() => setDisplayTab("bestsellers")}
-							className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition ${
-								displayTab === "bestsellers"
-									? "bg-brand-600 text-white shadow-sm"
-									: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-							}`}
-						>
-							<Award size={16} />
-							Bestsellers
-						</button>
+					<div className='flex items-center gap-6'>
+						{tabs.map((tab) => (
+							<button
+								key={tab.id}
+								onClick={() => setDisplayTab(tab.id)}
+								className={`border-b-2 pb-1 text-xs font-medium uppercase tracking-[0.2em] transition ${
+									displayTab === tab.id
+										? "border-gray-900 text-gray-900"
+										: "border-transparent text-gray-500 hover:text-gray-900"
+								}`}
+							>
+								{tab.label}
+							</button>
+						))}
 					</div>
 				</div>
 
-				<div className='mt-6'>
-					{displayTab === "featured" && (
-						<div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4'>
-							{products.map((product) => (
-								<ProductCard key={product._id} product={product} />
-							))}
-						</div>
-					)}
-
-					{displayTab === "trending" && (
-						<div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4'>
-							{(trending.length > 0 ? trending : products).map((product) => (
-								<ProductCard key={product._id} product={product} />
-							))}
-						</div>
-					)}
-
-					{displayTab === "bestsellers" && (
-						<div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4'>
-							{(bestsellers.length > 0 ? bestsellers : products).map((product) => (
-								<ProductCard key={product._id} product={product} />
-							))}
-						</div>
-					)}
+				<div className='mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4'>
+					{shownProducts.map((product) => (
+						<ProductCard key={product._id} product={product} />
+					))}
 				</div>
 			</section>
 		</div>
