@@ -36,6 +36,67 @@ export const useUserStore = create((set, get) => ({
 		}
 	},
 
+	vendorSignup: async ({ name, email, password, confirmPassword }) => {
+		set({ loading: true });
+
+		if (password !== confirmPassword) {
+			set({ loading: false });
+			return toast.error("Passwords do not match");
+		}
+
+		try {
+			const res = await axios.post("/auth/vendor-signup", { name, email, password });
+			set({ user: res.data, loading: false });
+			toast.success("Vendor account created successfully!");
+		} catch (error) {
+			set({ loading: false });
+			toast.error(error.response?.data?.message || "An error occurred");
+		}
+	},
+
+	updateProfile: async ({ name, phone, address }) => {
+		set({ loading: true });
+		try {
+			const res = await axios.put("/auth/profile", { name, phone, address });
+			set({ user: res.data, loading: false });
+			toast.success("Profile updated successfully");
+			return true;
+		} catch (error) {
+			set({ loading: false });
+			toast.error(error.response?.data?.message || "Failed to update profile");
+			return false;
+		}
+	},
+
+	changePassword: async ({ currentPassword, newPassword, confirmPassword }) => {
+		if (newPassword !== confirmPassword) {
+			return toast.error("New passwords do not match");
+		}
+		set({ loading: true });
+		try {
+			await axios.put("/auth/change-password", { currentPassword, newPassword });
+			set({ loading: false });
+			toast.success("Password changed successfully");
+			return true;
+		} catch (error) {
+			set({ loading: false });
+			toast.error(error.response?.data?.message || "Failed to change password");
+			return false;
+		}
+	},
+
+	deleteAccount: async () => {
+		set({ loading: true });
+		try {
+			await axios.delete("/auth/account");
+			set({ user: null, loading: false });
+			toast.success("Account deleted successfully");
+		} catch (error) {
+			set({ loading: false });
+			toast.error(error.response?.data?.message || "Failed to delete account");
+		}
+	},
+
 	logout: async () => {
 		try {
 			await axios.post("/auth/logout");

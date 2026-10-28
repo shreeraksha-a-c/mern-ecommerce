@@ -1,17 +1,22 @@
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useCartStore } from "../stores/useCartStore";
+import { useCurrencyStore } from "../stores/useCurrencyStore";
 import { getCategoryName } from "../lib/categories";
 
 const CartItem = ({ item }) => {
 	const { removeFromCart, updateQuantity } = useCartStore();
+	const { formatPrice } = useCurrencyStore();
 
 	return (
 		<div className='flex gap-4 p-5'>
-			<img
-				className='h-24 w-24 shrink-0 rounded-lg border border-gray-200 object-cover sm:h-28 sm:w-28'
-				src={item.image}
-				alt={item.name}
-			/>
+			<Link to={`/product/${item._id}`} className='shrink-0'>
+				<img
+					className='h-24 w-24 rounded-lg border border-gray-200 object-cover sm:h-28 sm:w-28 transition hover:opacity-90'
+					src={item.image}
+					alt={item.name}
+				/>
+			</Link>
 
 			<div className='flex min-w-0 flex-1 flex-col'>
 				<div className='flex justify-between gap-4'>
@@ -21,13 +26,15 @@ const CartItem = ({ item }) => {
 								{getCategoryName(item.category)}
 							</p>
 						)}
-						<h3 className='mt-0.5 truncate font-semibold text-gray-900'>{item.name}</h3>
+						<Link to={`/product/${item._id}`}>
+							<h3 className='mt-0.5 truncate font-semibold text-gray-900 hover:text-brand-600 transition'>{item.name}</h3>
+						</Link>
 						<p className='mt-1 line-clamp-2 text-sm text-gray-600'>{item.description}</p>
 					</div>
 					<div className='shrink-0 text-right'>
-						<p className='font-bold text-gray-900'>${(item.price * item.quantity).toFixed(2)}</p>
+						<p className='font-bold text-gray-900'>{formatPrice(item.price * item.quantity)}</p>
 						{item.quantity > 1 && (
-							<p className='text-xs text-gray-500'>${Number(item.price).toFixed(2)} each</p>
+							<p className='text-xs text-gray-500'>{formatPrice(item.price)} each</p>
 						)}
 					</div>
 				</div>

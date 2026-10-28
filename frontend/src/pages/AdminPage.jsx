@@ -1,14 +1,16 @@
-import { BarChart, PlusCircle, ShoppingBasket } from "lucide-react";
+import { BarChart, PlusCircle, ShoppingBasket, PackageCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import AnalyticsTab from "../components/AnalyticsTab";
 import CreateProductForm from "../components/CreateProductForm";
 import ProductsList from "../components/ProductsList";
+import OrdersTab from "../components/OrdersTab";
 import { useProductStore } from "../stores/useProductStore";
 
 const tabs = [
 	{ id: "create", label: "Create Product", icon: PlusCircle },
 	{ id: "products", label: "Products", icon: ShoppingBasket },
+	{ id: "orders", label: "Customer Orders", icon: PackageCheck },
 	{ id: "analytics", label: "Analytics", icon: BarChart },
 ];
 
@@ -24,7 +26,7 @@ const AdminPage = () => {
 		<div className='mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
 			<div>
 				<h1 className='text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl'>Admin dashboard</h1>
-				<p className='mt-1 text-sm text-gray-600'>Manage your catalogue and track store performance.</p>
+				<p className='mt-1 text-sm text-gray-600'>Manage your catalogue, customer orders, and track store performance.</p>
 			</div>
 
 			<div className='mt-8 grid gap-8 lg:grid-cols-[220px_1fr]'>
@@ -49,6 +51,7 @@ const AdminPage = () => {
 				<div className='min-w-0'>
 					{activeTab === "create" && <CreateProductForm />}
 					{activeTab === "products" && <ProductsList />}
+					{activeTab === "orders" && <OrdersTab />}
 					{activeTab === "analytics" && <AnalyticsTab />}
 				</div>
 			</div>

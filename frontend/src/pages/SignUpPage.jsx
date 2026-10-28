@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader } from "lucide-react";
+import { Loader, ShoppingBag, Store } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
 import AuthLayout from "../components/AuthLayout";
 
@@ -18,6 +18,7 @@ const fields = [
 ];
 
 const SignUpPage = () => {
+	const [accountType, setAccountType] = useState("customer"); // "customer" or "vendor"
 	const [formData, setFormData] = useState({
 		name: "",
 		email: "",
@@ -25,17 +26,21 @@ const SignUpPage = () => {
 		confirmPassword: "",
 	});
 
-	const { signup, loading } = useUserStore();
+	const { signup, vendorSignup, loading } = useUserStore();
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		signup(formData);
+		if (accountType === "vendor") {
+			vendorSignup(formData);
+		} else {
+			signup(formData);
+		}
 	};
 
 	return (
 		<AuthLayout
 			title='Create your account'
-			subtitle='It only takes a minute to get started.'
+			subtitle='Join thousands of happy shoppers and sellers.'
 			footer={
 				<>
 					Already have an account?{" "}
@@ -45,7 +50,35 @@ const SignUpPage = () => {
 				</>
 			}
 		>
-			<form onSubmit={handleSubmit} className='space-y-5'>
+			{/* Account Type Selector */}
+			<div className='mb-6 grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1.5'>
+				<button
+					type='button'
+					onClick={() => setAccountType("customer")}
+					className={`flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition ${
+						accountType === "customer"
+							? "bg-white text-brand-700 shadow-sm"
+							: "text-gray-600 hover:text-gray-900"
+					}`}
+				>
+					<ShoppingBag size={15} />
+					Shopper Account
+				</button>
+				<button
+					type='button'
+					onClick={() => setAccountType("vendor")}
+					className={`flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition ${
+						accountType === "vendor"
+							? "bg-white text-emerald-700 shadow-sm"
+							: "text-gray-600 hover:text-gray-900"
+					}`}
+				>
+					<Store size={15} />
+					Vendor (Seller)
+				</button>
+			</div>
+
+			<form onSubmit={handleSubmit} className='space-y-4'>
 				{fields.map((field) => (
 					<div key={field.id}>
 						<label htmlFor={field.id} className='label'>
@@ -64,18 +97,27 @@ const SignUpPage = () => {
 					</div>
 				))}
 
-				<button type='submit' className='btn-primary w-full py-3' disabled={loading}>
+				<button
+					type='submit'
+					className={`w-full py-3 ${
+						accountType === "vendor"
+							? "btn-primary bg-emerald-600 hover:bg-emerald-700 ring-emerald-500"
+							: "btn-primary"
+					}`}
+					disabled={loading}
+				>
 					{loading ? (
 						<>
 							<Loader className='h-5 w-5 animate-spin' aria-hidden='true' />
-							Creating account...
+							Creating {accountType === "vendor" ? "seller" : "customer"} account...
 						</>
 					) : (
-						"Create account"
+						`Create ${accountType === "vendor" ? "Vendor" : "Shopper"} Account`
 					)}
 				</button>
 			</form>
 		</AuthLayout>
 	);
 };
+
 export default SignUpPage;

@@ -1,4 +1,5 @@
 import { useCartStore } from "../stores/useCartStore";
+import { useCurrencyStore } from "../stores/useCurrencyStore";
 import { Link } from "react-router-dom";
 import { Lock, MoveRight } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
@@ -10,11 +11,12 @@ const stripePromise = loadStripe(
 
 const OrderSummary = () => {
 	const { total, subtotal, coupon, isCouponApplied, cart } = useCartStore();
+	const { formatPrice } = useCurrencyStore();
 
 	const savings = subtotal - total;
-	const formattedSubtotal = subtotal.toFixed(2);
-	const formattedTotal = total.toFixed(2);
-	const formattedSavings = savings.toFixed(2);
+	const formattedSubtotal = formatPrice(subtotal);
+	const formattedTotal = formatPrice(total);
+	const formattedSavings = formatPrice(savings);
 	const amountToCoupon = 200 - total;
 
 	const handlePayment = async () => {
@@ -41,7 +43,7 @@ const OrderSummary = () => {
 			<dl className='space-y-3 text-sm'>
 				<div className='flex items-center justify-between gap-4'>
 					<dt className='text-gray-600'>Subtotal</dt>
-					<dd className='font-medium text-gray-900'>${formattedSubtotal}</dd>
+					<dd className='font-medium text-gray-900'>{formattedSubtotal}</dd>
 				</div>
 
 				{coupon && isCouponApplied && (
@@ -56,19 +58,19 @@ const OrderSummary = () => {
 				{savings > 0 && (
 					<div className='flex items-center justify-between gap-4'>
 						<dt className='text-gray-600'>You save</dt>
-						<dd className='font-medium text-green-700'>-${formattedSavings}</dd>
+						<dd className='font-medium text-green-700'>-{formattedSavings}</dd>
 					</div>
 				)}
 
 				<div className='flex items-center justify-between gap-4 border-t border-gray-200 pt-3'>
 					<dt className='text-base font-semibold text-gray-900'>Total</dt>
-					<dd className='text-xl font-bold text-gray-900'>${formattedTotal}</dd>
+					<dd className='text-xl font-bold text-gray-900'>{formattedTotal}</dd>
 				</div>
 			</dl>
 
 			{amountToCoupon > 0 ? (
 				<p className='rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-800'>
-					Add <strong>${amountToCoupon.toFixed(2)}</strong> more to earn a 10% coupon for your next order.
+					Add <strong>{formatPrice(amountToCoupon)}</strong> more to earn a 10% coupon for your next order.
 				</p>
 			) : (
 				<p className='rounded-lg bg-green-50 px-3 py-2 text-xs text-green-800'>

@@ -1,14 +1,28 @@
-import { Trash2, Star } from "lucide-react";
+import { Trash2, Star, Edit3 } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
+import { useCurrencyStore } from "../stores/useCurrencyStore";
 import { getCategoryName } from "../lib/categories";
+import { Link } from "react-router-dom";
 
 const ProductsList = () => {
-	const { deleteProduct, toggleFeaturedProduct, products } = useProductStore();
+	const { deleteProduct, toggleFeaturedProduct, updateStock, products } = useProductStore();
+	const { formatPrice } = useCurrencyStore();
+
+	const handleStockPrompt = (product) => {
+		const current = product.stock !== undefined ? product.stock : 0;
+		const newStock = prompt(`Enter new stock for "${product.name}":`, current);
+		if (newStock !== null && !isNaN(Number(newStock)) && Number(newStock) >= 0) {
+			updateStock(product._id, Number(newStock));
+		}
+	};
 
 	return (
 		<div className='card overflow-hidden'>
 			<div className='flex items-center justify-between border-b border-gray-200 px-5 py-4'>
-				<h2 className='text-lg font-semibold text-gray-900'>All products</h2>
+				<div>
+					<h2 className='text-lg font-semibold text-gray-900'>All products</h2>
+					<p className='text-xs text-gray-500'>View, update stock, or toggle featured status.</p>
+				</div>
 				<span className='text-sm text-gray-500'>{products?.length ?? 0} total</span>
 			</div>
 
@@ -16,7 +30,7 @@ const ProductsList = () => {
 				<table className='min-w-full divide-y divide-gray-200 text-sm'>
 					<thead className='bg-gray-50'>
 						<tr>
-							{["Product", "Price", "Category", "Featured", "Actions"].map((heading) => (
+							{["Product", "Price", "Category", "Stock", "Featured", "Actions"].map((heading) => (
 								<th
 									key={heading}
 									scope='col'
@@ -38,14 +52,37 @@ const ProductsList = () => {
 											src={product.image}
 											alt={product.name}
 										/>
-										<span className='font-medium text-gray-900'>{product.name}</span>
+										<Link
+											to={`/product/${product._id}`}
+											className='font-medium text-gray-900 hover:text-brand-600 transition'
+										>
+											{product.name}
+										</Link>
 									</div>
 								</td>
-								<td className='whitespace-nowrap px-5 py-3 text-gray-700'>${product.price.toFixed(2)}</td>
+								<td className='whitespace-nowrap px-5 py-3 text-gray-700 font-semibold'>
+									{formatPrice(product.price)}
+								</td>
 								<td className='whitespace-nowrap px-5 py-3'>
 									<span className='rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700'>
 										{getCategoryName(product.category)}
 									</span>
+								</td>
+								<td className='whitespace-nowrap px-5 py-3'>
+									<button
+										onClick={() => handleStockPrompt(product)}
+										className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold border transition ${
+											product.stock === 0
+												? "border-red-200 bg-red-50 text-red-700"
+												: product.stock <= 5
+												? "border-amber-200 bg-amber-50 text-amber-800"
+												: "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+										}`}
+										title='Click to edit stock level'
+									>
+										<span>{product.stock ?? 0} units</span>
+										<Edit3 size={12} className='text-gray-400' />
+									</button>
 								</td>
 								<td className='whitespace-nowrap px-5 py-3'>
 									<button
@@ -63,9 +100,14 @@ const ProductsList = () => {
 								</td>
 								<td className='whitespace-nowrap px-5 py-3'>
 									<button
-										onClick={() => deleteProduct(product._id)}
+										onClick={() => {
+											if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
+												deleteProduct(product._id);
+											}
+										}}
 										className='rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600'
 										aria-label={`Delete ${product.name}`}
+										title='Delete product'
 									>
 										<Trash2 className='h-4 w-4' />
 									</button>
