@@ -3,8 +3,12 @@ import axios from "../lib/axios";
 import { Users, Package, ShoppingCart, DollarSign } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import LoadingSpinner from "./LoadingSpinner";
+import { useCurrencyStore } from "../stores/useCurrencyStore";
 
 const CHART_COLOR = "#4f46e5"; // brand-600, validated against the white surface
+// "2026-10-29" -> "29 Oct"
+const formatDate = (iso) =>
+	new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
 const AnalyticsTab = () => {
 	const [analyticsData, setAnalyticsData] = useState({
@@ -15,6 +19,7 @@ const AnalyticsTab = () => {
 	});
 	const [isLoading, setIsLoading] = useState(true);
 	const [dailySalesData, setDailySalesData] = useState([]);
+	const { formatPrice } = useCurrencyStore();
 
 	useEffect(() => {
 		const fetchAnalyticsData = async () => {
@@ -44,7 +49,8 @@ const AnalyticsTab = () => {
 				<AnalyticsCard title='Total sales' value={analyticsData.totalSales.toLocaleString()} icon={ShoppingCart} />
 				<AnalyticsCard
 					title='Total revenue'
-					value={`$${analyticsData.totalRevenue.toLocaleString()}`}
+					//value={`$${analyticsData.totalRevenue.toLocaleString()}`}
+					value={formatPrice(analyticsData.totalRevenue)}
 					icon={DollarSign}
 				/>
 			</div>
@@ -57,7 +63,8 @@ const AnalyticsTab = () => {
 					subtitle='Revenue per day, last 7 days'
 					data={dailySalesData}
 					dataKey='revenue'
-					formatValue={(value) => `$${Number(value).toLocaleString()}`}
+					//formatValue={(value) => `$${Number(value).toLocaleString()}`}
+					formatValue={(value) => formatPrice(Number(value))}
 				/>
 			</div>
 
@@ -73,10 +80,15 @@ const AnalyticsTab = () => {
 					</thead>
 					<tbody className='divide-y divide-gray-100 tabular-nums text-gray-700'>
 						{dailySalesData.map((day) => (
-							<tr key={day.name}>
-								<td className='py-2 pr-4'>{day.name}</td>
+							// <tr key={day.name}>
+							// 	<td className='py-2 pr-4'>{day.name}</td>
+							// 	<td className='py-2 pr-4 text-right'>{day.sales.toLocaleString()}</td>
+							// 	<td className='py-2 text-right'>${day.revenue.toLocaleString()}</td>
+							// </tr>
+							<tr key={day.date}>
+								<td className='py-2 pr-4'>{formatDate(day.date)}</td>
 								<td className='py-2 pr-4 text-right'>{day.sales.toLocaleString()}</td>
-								<td className='py-2 text-right'>${day.revenue.toLocaleString()}</td>
+								<td className='py-2 text-right'>{formatPrice(day.revenue)}</td>
 							</tr>
 						))}
 					</tbody>
@@ -108,7 +120,8 @@ const TrendChart = ({ title, subtitle, data, dataKey, formatValue = (value) => N
 				<LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
 					<CartesianGrid stroke='#f3f4f6' vertical={false} />
 					<XAxis
-						dataKey='name'
+						dataKey='date'
+						tickFormatter={formatDate} //change
 						tick={{ fill: "#6b7280", fontSize: 12 }}
 						tickLine={false}
 						axisLine={{ stroke: "#e5e7eb" }}
@@ -117,11 +130,12 @@ const TrendChart = ({ title, subtitle, data, dataKey, formatValue = (value) => N
 						tick={{ fill: "#6b7280", fontSize: 12 }}
 						tickLine={false}
 						axisLine={false}
-						width={56}
+						width={80}
 						tickFormatter={formatValue}
 						allowDecimals={false}
 					/>
 					<Tooltip
+						labelFormatter={formatDate} //change
 						formatter={(value) => [formatValue(value), title.replace("Daily ", "")]}
 						cursor={{ stroke: "#d1d5db", strokeDasharray: "4 4" }}
 						contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
