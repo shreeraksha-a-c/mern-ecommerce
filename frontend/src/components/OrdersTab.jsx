@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
+//import { useEffect, useState, useMemo } from "react";
+import { Fragment, useEffect, useState, useMemo } from "react";
 import { useOrderStore } from "../stores/useOrderStore";
 import { useCurrencyStore } from "../stores/useCurrencyStore";
 import {
@@ -10,8 +11,12 @@ import {
 	Clock,
 	Truck,
 	XCircle,
+	ChevronDown,
+	ChevronRight,
 } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
+
+import OrderItemsTable from "./OrderItemsTable";
 
 const statuses = ["all", "processing", "shipped", "delivered", "cancelled", "refunded"];
 
@@ -20,6 +25,8 @@ const OrdersTab = () => {
 	const { formatPrice } = useCurrencyStore();
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [searchQuery, setSearchQuery] = useState("");
+
+	const [expandedId, setExpandedId] = useState(null);
 
 	useEffect(() => {
 		fetchAllOrders();
@@ -129,9 +136,17 @@ const OrdersTab = () => {
 					</thead>
 					<tbody className='divide-y divide-gray-100 bg-white'>
 						{filteredOrders.map((order) => (
-							<tr key={order._id} className='hover:bg-gray-50/75'>
+							<Fragment key={order._id}>
+							<tr className='hover:bg-gray-50/75'>
 								<td className='px-5 py-4 whitespace-nowrap'>
-									<p className='font-mono font-bold text-gray-900 text-xs'>{order._id}</p>
+									<button
+										onClick={() => setExpandedId(expandedId === order._id ? null : order._id)}
+										className='flex items-center gap-1 font-mono font-bold text-gray-900 text-xs hover:text-brand-700'
+										title='Show items'
+									>
+										{expandedId === order._id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+										{order._id}
+									</button>
 									<p className='text-xs text-gray-500 flex items-center gap-1 mt-0.5'>
 										<Calendar size={12} />
 										{new Date(order.createdAt).toLocaleDateString()}
@@ -197,6 +212,14 @@ const OrdersTab = () => {
 									)}
 								</td>
 							</tr>
+							{expandedId === order._id && (
+								<tr>
+									<td colSpan={6} className='bg-gray-50/60 p-3'>
+										<OrderItemsTable orders={[order]} />
+									</td>
+								</tr>
+							)}
+							</Fragment>
 						))}
 					</tbody>
 				</table>

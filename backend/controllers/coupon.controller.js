@@ -26,7 +26,11 @@ const findUsableCoupon = async (code, userId) => {
 // POST /api/coupons/validate  body: { code }  (customer) - check only, no persistence
 export const validateCoupon = async (req, res) => {
 	try {
-		const { code } = req.body;
+		//const { code } = req.body;
+		const code = String(req.body.code || "").trim().toUpperCase();
+		if (!code) {
+			return res.status(400).json({ message: "Coupon code is required" });
+		}
 		const coupon = await findUsableCoupon(code, req.user._id);
 
 		if (!coupon) {
@@ -55,7 +59,11 @@ export const validateCoupon = async (req, res) => {
 // POST /api/coupons/apply  body: { code }  (customer) - validate AND remember it on the user
 export const applyCoupon = async (req, res) => {
 	try {
-		const { code } = req.body;
+		//const { code } = req.body;
+		const code = String(req.body.code || "").trim().toUpperCase();
+		if (!code) {
+			return res.status(400).json({ message: "Coupon code is required" });
+		}
 		const coupon = await findUsableCoupon(code, req.user._id);
 
 		if (!coupon || coupon.expirationDate < new Date()) {
@@ -115,13 +123,14 @@ export const createCoupon = async (req, res) => {
 			if (!user) return res.status(404).json({ message: "User not found" });
 		}
 
-		const existing = await Coupon.findOne({ code });
+		const normalizedCode = String(code).trim().toUpperCase();
+		const existing = await Coupon.findOne({ code: normalizedCode });
 		if (existing) {
 			return res.status(400).json({ message: "A coupon with this code already exists" });
 		}
 
 		const coupon = await Coupon.create({
-			code: code.toUpperCase(),
+			code: normalizedCode,
 			discountPercentage,
 			expirationDate,
 			userId: userId || undefined,
@@ -161,6 +170,49 @@ export const deleteCoupon = async (req, res) => {
 		res.json({ message: "Coupon deleted" });
 	} catch (error) {
 		console.log("Error in deleteCoupon controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+// PUT /api/coupons/:id  body: { discountPercentage, expirationDate, isActive }  (admin)
+export const updateCoupon = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { discountPercentage, expirationDate, isActive } = req.body;
+
+		if (!mongoose.isValidObjectId(id)) {
+			return res.status(400).json({ message: "Invalid coupon id" });
+		}
+		if (discountPercentage === undefined || !expirationDate) {
+			return res.status(400).json({ message: "discountPercentage and expirationDate are required" });
+		}
+		if (
+			Number.isNaN(Number(discountPercentage)) ||
+			Number(discountPercentage) < 0 ||
+			Number(discountPercentage) > 100
+		) {
+			return res.status(400).json({ message: "discountPercentage must be between 0 and 100" });
+		}
+		if (Number.isNaN(new Date(expirationDate).getTime())) {
+			return res.status(400).json({ message: "expirationDate is not a valid date" });
+		}
+		if (isActive !== undefined && typeof isActive !== "boolean") {
+			return res.status(400).json({ message: "isActive must be true or false" });
+		}
+
+		const coupon = await Coupon.findById(id);
+		if (!coupon) {
+			return res.status(404).json({ message: "Coupon not found" });
+		}
+
+		coupon.discountPercentage = Number(discountPercentage);
+		coupon.expirationDate = expirationDate;
+		if (isActive !== undefined) coupon.isActive = isActive;
+		await coupon.save();
+
+		res.json(coupon);
+	} catch (error) {
+		console.log("Error in updateCoupon controller", error.message);
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };

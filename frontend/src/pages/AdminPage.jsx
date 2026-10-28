@@ -1,16 +1,30 @@
-import { BarChart, PlusCircle, ShoppingBasket, PackageCheck } from "lucide-react";
+//import { BarChart, PlusCircle, ShoppingBasket, PackageCheck } from "lucide-react";
+import { BarChart, PlusCircle, ShoppingBasket, PackageCheck, Ticket, Users, Tags } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import AnalyticsTab from "../components/AnalyticsTab";
 import CreateProductForm from "../components/CreateProductForm";
 import ProductsList from "../components/ProductsList";
 import OrdersTab from "../components/OrdersTab";
+import UsersTab from "../components/UsersTab";
+import CouponsTab from "../components/CouponsTab";
+import CategoriesTab from "../components/CategoriesTab";
 import { useProductStore } from "../stores/useProductStore";
+
+// const tabs = [
+// 	{ id: "create", label: "Create Product", icon: PlusCircle },
+// 	{ id: "products", label: "Products", icon: ShoppingBasket },
+// 	{ id: "orders", label: "Customer Orders", icon: PackageCheck },
+// 	{ id: "analytics", label: "Analytics", icon: BarChart },
+// ];
 
 const tabs = [
 	{ id: "create", label: "Create Product", icon: PlusCircle },
 	{ id: "products", label: "Products", icon: ShoppingBasket },
 	{ id: "orders", label: "Customer Orders", icon: PackageCheck },
+	{ id: "users", label: "Users", icon: Users },
+	{ id: "coupons", label: "Coupons", icon: Ticket },
+	{ id: "categories", label: "Categories", icon: Tags },
 	{ id: "analytics", label: "Analytics", icon: BarChart },
 ];
 
@@ -52,6 +66,9 @@ const AdminPage = () => {
 					{activeTab === "create" && <CreateProductForm />}
 					{activeTab === "products" && <ProductsList />}
 					{activeTab === "orders" && <OrdersTab />}
+					{activeTab === "users" && <UsersTab />}
+					{activeTab === "coupons" && <CouponsTab />}
+					{activeTab === "categories" && <CategoriesTab />}
 					{activeTab === "analytics" && <AnalyticsTab />}
 				</div>
 			</div>

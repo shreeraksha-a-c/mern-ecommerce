@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from "react";
+//import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
 	ShoppingCart,
 	LogIn,
@@ -18,7 +19,8 @@ import { useUserStore } from "../stores/useUserStore";
 import { useCartStore } from "../stores/useCartStore";
 import { useWishlistStore } from "../stores/useWishlistStore";
 import { useCurrencyStore, CURRENCIES } from "../stores/useCurrencyStore";
-import { categories } from "../lib/categories";
+//import { categories } from "../lib/categories";
+import { useCategoryStore } from "../stores/useCategoryStore";
 
 const SearchBar = ({ className = "" }) => {
 	const navigate = useNavigate();
@@ -61,26 +63,26 @@ const SearchBar = ({ className = "" }) => {
 	);
 };
 
-const departmentSections = [
-	{
-		id: "women",
-		label: "Women",
-		description: "Trending fashion, accessories and footwear for women",
-		categories: categories,
-	},
-	{
-		id: "men",
-		label: "Men",
-		description: "Modern wardrobe essentials, suits and footwear for men",
-		categories: categories,
-	},
-	{
-		id: "kids",
-		label: "Kids",
-		description: "Playful, comfortable outfits and gear for kids",
-		categories: categories.filter((c) => c.slug !== "suits"),
-	},
-];
+// const departmentSections = [
+// 	{
+// 		id: "women",
+// 		label: "Women",
+// 		description: "Trending fashion, accessories and footwear for women",
+// 		categories: categories,
+// 	},
+// 	{
+// 		id: "men",
+// 		label: "Men",
+// 		description: "Modern wardrobe essentials, suits and footwear for men",
+// 		categories: categories,
+// 	},
+// 	{
+// 		id: "kids",
+// 		label: "Kids",
+// 		description: "Playful, comfortable outfits and gear for kids",
+// 		categories: categories.filter((c) => c.slug !== "suits"),
+// 	},
+// ];
 
 const Navbar = () => {
 	const { user, logout } = useUserStore();
@@ -94,6 +96,32 @@ const Navbar = () => {
 	const wishlistCount = wishlist.length;
 
 	const { currentCurrency, setCurrency } = useCurrencyStore();
+
+	const categories = useCategoryStore((s) => s.categories);
+
+	const departmentSections = useMemo(
+		() => [
+			{
+				id: "women",
+				label: "Women",
+				description: "Trending fashion, accessories and footwear for women",
+				categories,
+			},
+			{
+				id: "men",
+				label: "Men",
+				description: "Modern wardrobe essentials, suits and footwear for men",
+				categories,
+			},
+			{
+				id: "kids",
+				label: "Kids",
+				description: "Playful, comfortable outfits and gear for kids",
+				categories: categories.filter((c) => c.slug !== "suits"),
+			},
+		],
+		[categories]
+	);
 
 	const [userMenuOpen, setUserMenuOpen] = useState(false);
 	const [activeDropdown, setActiveDropdown] = useState(null);

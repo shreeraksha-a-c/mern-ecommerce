@@ -7,6 +7,7 @@ import {
 	getAllCoupons,
 	getCoupon,
 	removeCoupon,
+	updateCoupon,
 	validateCoupon,
 } from "../controllers/coupon.controller.js";
 
@@ -18,6 +19,7 @@ router.post("/validate", protectRoute, validateCoupon);
 router.post("/apply", protectRoute, applyCoupon);
 router.post("/remove", protectRoute, removeCoupon);
 router.post("/", protectRoute, adminRoute, createCoupon);
+router.put("/:id", protectRoute, adminRoute, updateCoupon);
 router.delete("/:id", protectRoute, adminRoute, deleteCoupon);
 
 export default router;

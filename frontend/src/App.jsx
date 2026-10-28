@@ -24,15 +24,21 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import { useUserStore } from "./stores/useUserStore";
 import { useCartStore } from "./stores/useCartStore";
 import { useWishlistStore } from "./stores/useWishlistStore";
+import { useCategoryStore } from "./stores/useCategoryStore";
 
 function App() {
 	const { user, checkAuth, checkingAuth } = useUserStore();
 	const { getCartItems } = useCartStore();
 	const { getWishlist } = useWishlistStore();
+	const { fetchCategories, loaded: categoriesLoaded } = useCategoryStore();
 
 	useEffect(() => {
 		checkAuth();
 	}, [checkAuth]);
+
+	useEffect(() => {
+		fetchCategories();
+	}, [fetchCategories]);
 
 	useEffect(() => {
 		if (!user) return;
@@ -41,7 +47,8 @@ function App() {
 		getWishlist();
 	}, [getCartItems, getWishlist, user]);
 
-	if (checkingAuth) return <LoadingSpinner />;
+	//if (checkingAuth) return <LoadingSpinner />;
+	if (checkingAuth || !categoriesLoaded) return <LoadingSpinner />;
 
 	return (
 		<div className='flex min-h-screen flex-col'>

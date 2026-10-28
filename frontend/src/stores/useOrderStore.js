@@ -70,6 +70,17 @@ export const useOrderStore = create((set) => ({
 		}
 	},
 
+	// returns one user's orders (admin); not stored globally, the caller keeps them
+	fetchOrdersByUser: async (userId) => {
+		try {
+			const res = await axios.get(`/orders?user=${userId}&limit=50`);
+			return res.data?.orders || [];
+		} catch (error) {
+			toast.error(error.response?.data?.message || "Failed to load user's orders");
+			return [];
+		}
+	},
+
 	updateOrderStatus: async (orderId, status) => {
 		try {
 			const res = await axios.patch(`/orders/${orderId}/status`, { status });

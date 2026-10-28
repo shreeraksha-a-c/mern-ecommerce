@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { PlusCircle, Upload, Loader } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
-import { categories } from "../lib/categories";
+//import { categories } from "../lib/categories";
+import { useCategoryStore } from "../stores/useCategoryStore";
 
 const CreateProductForm = () => {
+	const categories = useCategoryStore((s) => s.categories);
 	const [newProduct, setNewProduct] = useState({
 		name: "",
 		description: "",

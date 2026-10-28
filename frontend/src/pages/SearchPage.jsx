@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "../lib/axios";
 import ProductBrowser from "../components/ProductBrowser";
-import { categories } from "../lib/categories";
+//import { categories } from "../lib/categories";
+import { useCategoryStore } from "../stores/useCategoryStore";
 
 // The API has no search endpoint, so load every category once and filter in the browser
 const SearchPage = () => {
+	const categories = useCategoryStore((s) => s.categories);
 	const [searchParams] = useSearchParams();
 	const query = (searchParams.get("q") ?? "").trim();
 	const [allProducts, setAllProducts] = useState([]);

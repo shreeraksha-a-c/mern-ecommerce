@@ -511,16 +511,16 @@ export const getProductById = async (req, res) => {
 	}
 };
 
-// GET /api/products/categories  (public)
-export const getCategories = async (req, res) => {
-	try {
-		const categories = await Product.distinct("category");
-		res.json(categories.sort());
-	} catch (error) {
-		console.log("Error in getCategories controller", error.message);
-		res.status(500).json({ message: "Server error", error: error.message });
-	}
-};
+// // GET /api/products/categories  (public)
+// export const getCategories = async (req, res) => {
+// 	try {
+// 		const categories = await Product.distinct("category");
+// 		res.json(categories.sort());
+// 	} catch (error) {
+// 		console.log("Error in getCategories controller", error.message);
+// 		res.status(500).json({ message: "Server error", error: error.message });
+// 	}
+// };
 
 // GET /api/products/low-stock?threshold=5  (vendor or admin) - vendors only see their own
 export const getLowStockProducts = async (req, res) => {

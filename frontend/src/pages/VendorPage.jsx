@@ -18,11 +18,14 @@ import {
 	Layers,
 	Pencil,
 } from "lucide-react";
-import { categories, getCategoryName } from "../lib/categories";
+//import { categories, getCategoryName } from "../lib/categories";
+import { getCategoryName } from "../lib/categories";
+import { useCategoryStore } from "../stores/useCategoryStore";
 import toast from "react-hot-toast";
 import EditProductModal from "../components/EditProductModal";
 
 const VendorPage = () => {
+	const categories = useCategoryStore((s) => s.categories);
 	const { formatPrice } = useCurrencyStore();
 	const {
 		vendorProducts,

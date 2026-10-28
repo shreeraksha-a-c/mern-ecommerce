@@ -68,7 +68,8 @@ export const getOrderById = async (req, res) => {
 // GET /api/orders?status=&page=&limit=  -> all orders (admin only)
 export const getAllOrders = async (req, res) => {
 	try {
-		const { status } = req.query;
+		//const { status } = req.query;
+		const { status, user } = req.query;
 		const page = Math.max(parseInt(req.query.page) || 1, 1);
 		const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
 
@@ -80,10 +81,18 @@ export const getAllOrders = async (req, res) => {
 			filter.status = status;
 		}
 
+		if (user) {
+			if (!mongoose.isValidObjectId(user)) {
+				return res.status(400).json({ message: "Invalid user id" });
+			}
+			filter.user = user;
+		}
+
 		const [orders, total] = await Promise.all([
 			Order.find(filter)
 				.populate("user", "name email")
-				.populate("products.product", "name image")
+				//.populate("products.product", "name image")
+				.populate("products.product", "name image category")
 				.sort({ createdAt: -1 })
 				.skip((page - 1) * limit)
 				.limit(limit),

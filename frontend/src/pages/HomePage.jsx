@@ -5,7 +5,8 @@ import CategoryItem from "../components/CategoryItem";
 import { useProductStore } from "../stores/useProductStore";
 import FeaturedProducts from "../components/FeaturedProducts";
 import ProductCard from "../components/ProductCard";
-import { categories } from "../lib/categories";
+//import { categories } from "../lib/categories";
+import { useCategoryStore } from "../stores/useCategoryStore";
 
 const perks = [
 	{ icon: ShieldCheck, title: "Secure checkout", text: "Payments are processed safely by Stripe" },
@@ -14,6 +15,7 @@ const perks = [
 ];
 
 const HomePage = () => {
+	const categories = useCategoryStore((s) => s.categories);
 	const {
 		fetchFeaturedProducts,
 		products,

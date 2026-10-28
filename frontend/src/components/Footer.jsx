@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
-import { categories } from "../lib/categories";
+//import { categories } from "../lib/categories";
+import { useCategoryStore } from "../stores/useCategoryStore";
 
 const Footer = () => {
+	const categories = useCategoryStore((s) => s.categories);
 	return (
 		<footer className='mt-16 border-t border-gray-200 bg-white'>
 			<div className='mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8'>

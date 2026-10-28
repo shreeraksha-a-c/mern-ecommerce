@@ -16,7 +16,7 @@ import {
 	updateProduct,
 	updateStock,
 	updateVendorProduct,
-	getCategories, 
+	//getCategories, 
 	getLowStockProducts,
 	getProductById
 } from "../controllers/product.controller.js";
@@ -31,7 +31,7 @@ router.get("/bestsellers", getBestsellers);
 router.get("/trending", getTrending);
 router.get("/category/:category", getProductsByCategory);
 router.get("/recommendations", optionalAuth, getRecommendedProducts);
-router.get("/categories", getCategories);
+//router.get("/categories", getCategories);
 router.get("/low-stock", protectRoute, vendorRoute, getLowStockProducts);
 // vendor routes - must stay above "/:id" routes
 router.post("/vendor", protectRoute, vendorRoute, createVendorProduct);

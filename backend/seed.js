@@ -6,7 +6,7 @@ dotenv.config();
 
 const products = [
 	{ name: "Classic Denim Jeans", description: "Straight fit blue jeans", price: 1299, image: "https://images.unsplash.com/photo-1542272604-787c3835535d", category: "jeans", stock: 30, isFeatured: true },
-	{ name: "Cotton T-Shirt", description: "Soft everyday tee", price: 499, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab", category: "tshirts", stock: 50, isFeatured: true },
+	{ name: "Cotton T-Shirt", description: "Soft everyday tee", price: 499, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab", category: "t-shirts", stock: 50, isFeatured: true },
 	{ name: "Running Shoes", description: "Lightweight running shoes", price: 1499, image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a", category: "shoes", stock: 25, isFeatured: true },
 	{ name: "Leather Jacket", description: "Genuine leather biker jacket", price: 4999, image: "https://images.unsplash.com/photo-1551028719-00167b16eac5", category: "jackets", stock: 10, isFeatured: false },
 	{ name: "Formal Shirt", description: "Slim fit office shirt", price: 899, image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c", category: "shirts", stock: 40, isFeatured: false },
