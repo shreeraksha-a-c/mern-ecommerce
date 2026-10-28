@@ -2,6 +2,12 @@ import { create } from "zustand";
 import axios from "../lib/axios";
 import { toast } from "react-hot-toast";
 
+// the backend sometimes returns the order itself and sometimes { message, order }
+const unwrapOrder = (data) => data?.order || data;
+
+// keep the populated fields (customer, product images) and only update the status
+const withStatus = (order, id, status) => (order._id === id ? { ...order, status } : order);
+
 export const useOrderStore = create((set) => ({
 	orders: [],
 	orderDetail: null,
@@ -37,9 +43,11 @@ export const useOrderStore = create((set) => ({
 		set({ loading: true });
 		try {
 			const res = await axios.post(`/orders/${orderId}/cancel`);
+			const status = unwrapOrder(res.data).status;
 			set((state) => ({
-				orders: state.orders.map((o) => (o._id === orderId ? res.data : o)),
-				orderDetail: state.orderDetail?._id === orderId ? res.data : state.orderDetail,
+				orders: state.orders.map((o) => withStatus(o, orderId, status)),
+				orderDetail:
+					state.orderDetail?._id === orderId ? { ...state.orderDetail, status } : state.orderDetail,
 				loading: false,
 			}));
 			toast.success("Order cancelled successfully");
@@ -52,8 +60,10 @@ export const useOrderStore = create((set) => ({
 	fetchAllOrders: async () => {
 		set({ loading: true });
 		try {
-			const res = await axios.get("/orders");
-			set({ allOrders: res.data || [], loading: false });
+			// backend returns { orders, page, totalPages, total }; ask for the maximum page size
+			const res = await axios.get("/orders?limit=50");
+			const list = Array.isArray(res.data) ? res.data : res.data?.orders || [];
+			set({ allOrders: list, loading: false });
 		} catch (error) {
 			set({ loading: false });
 			console.error("Error fetching all orders:", error);
@@ -63,8 +73,9 @@ export const useOrderStore = create((set) => ({
 	updateOrderStatus: async (orderId, status) => {
 		try {
 			const res = await axios.patch(`/orders/${orderId}/status`, { status });
+			const newStatus = unwrapOrder(res.data).status;
 			set((state) => ({
-				allOrders: state.allOrders.map((o) => (o._id === orderId ? res.data : o)),
+				allOrders: state.allOrders.map((o) => withStatus(o, orderId, newStatus)),
 			}));
 			toast.success(`Order status updated to ${status}`);
 		} catch (error) {
@@ -75,8 +86,9 @@ export const useOrderStore = create((set) => ({
 	refundOrder: async (orderId) => {
 		try {
 			const res = await axios.post(`/orders/${orderId}/refund`);
+			const newStatus = unwrapOrder(res.data).status;
 			set((state) => ({
-				allOrders: state.allOrders.map((o) => (o._id === orderId ? res.data : o)),
+				allOrders: state.allOrders.map((o) => withStatus(o, orderId, newStatus)),
 			}));
 			toast.success("Order refunded and restocked successfully");
 		} catch (error) {
@@ -98,8 +110,9 @@ export const useOrderStore = create((set) => ({
 	updateVendorOrderStatus: async (orderId, status) => {
 		try {
 			const res = await axios.patch(`/orders/${orderId}/vendor-status`, { status });
+			const newStatus = unwrapOrder(res.data).status;
 			set((state) => ({
-				vendorOrders: state.vendorOrders.map((o) => (o._id === orderId ? res.data : o)),
+				vendorOrders: state.vendorOrders.map((o) => withStatus(o, orderId, newStatus)),
 			}));
 			toast.success(`Order marked as ${status}`);
 		} catch (error) {
